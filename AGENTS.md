@@ -1,5 +1,5 @@
 ---
-last_validated: 2026-09-14T13:55:07Z
+last_validated: 2026-09-14T15:53:03Z
 project_type: typescript-cli
 ---
 
@@ -18,9 +18,9 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 ├── .actionlint.yml
 ├── .changes
 │   ├── header.tpl.md
-│   └── unreleased
-│       ├── .gitkeep
-│       └── Added-20260914-141816.yaml
+│   ├── unreleased
+│   │   └── .gitkeep
+│   └── v0.1.0.md
 ├── .changie.yaml
 ├── .coderabbit.yaml
 ├── .editorconfig
@@ -41,6 +41,7 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 ├── .rumdl.toml
 ├── .yamllint.yml
 ├── AGENTS.md
+├── CHANGELOG.md
 ├── CLAUDE.md
 ├── LICENSE
 ├── README.md
@@ -77,9 +78,6 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 ├── mise.development.lock
 ├── mise.lock
 ├── package.json
-├── scripts
-│   ├── setup-hooks.sh
-│   └── template-init.sh
 ├── src
 │   ├── cli.ts
 │   ├── commands
