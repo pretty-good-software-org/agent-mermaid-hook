@@ -33,7 +33,7 @@ one wider than the limit is replaced by a one-line notice naming the diagram and
 The `Stop` hook always exits 0. A `Stop` hook that exits 2 keeps Claude from ending its turn, and a drawing helper
 must never do that.
 
-## Install
+## Installation
 
 Download the archive for your platform from the latest release and put `claude-mermaid-hook` on `PATH`, or let mise
 do it:
@@ -43,7 +43,9 @@ do it:
 "github:pretty-good-software-org/claude-mermaid-hook" = "latest"
 ```
 
-Then register the hooks in `~/.claude/settings.json`:
+## Usage
+
+Register the hooks in `~/.claude/settings.json`:
 
 ```json
 {
@@ -60,6 +62,12 @@ Then register the hooks in `~/.claude/settings.json`:
     ]
   }
 }
+```
+
+Try a diagram before putting it in a reply:
+
+```bash
+claude-mermaid-hook render --file diagram.mmd --width 100
 ```
 
 ## Limits
@@ -79,6 +87,10 @@ mise run setup:default   # tools, hooks, packages
 bun run check            # lockfile, typecheck, lint, format, spell, test
 bun run src/cli.ts render --file test/golden/sequence.mmd
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
 
 Releases are cut by tagging `vX.Y.Z` after `changie batch`; the release workflow builds standalone binaries for
 darwin-arm64, linux-arm64, and linux-x64 and attaches them with checksums and attestations.

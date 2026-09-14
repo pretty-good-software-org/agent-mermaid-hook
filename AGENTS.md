@@ -1,5 +1,5 @@
 ---
-last_validated: 2026-09-08T19:26:33Z
+last_validated: 2026-09-14T12:57:31Z
 project_type: typescript-cli
 ---
 
@@ -17,20 +17,20 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 .
 ├── .actionlint.yml
 ├── .changes
-│   ├── header.tpl.md
-│   └── unreleased
-│       ├── .gitkeep
-│       └── Added-20260914-141816.yaml
+│   ├── header.tpl.md
+│   └── unreleased
+│       ├── .gitkeep
+│       └── Added-20260914-141816.yaml
 ├── .changie.yaml
 ├── .coderabbit.yaml
 ├── .editorconfig
 ├── .github
-│   ├── dependabot.yml
-│   ├── PULL_REQUEST_TEMPLATE.md
-│   └── workflows
-│       ├── ci.yml
-│       ├── lint.yml
-│       └── release.yml
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── dependabot.yml
+│   └── workflows
+│       ├── ci.yml
+│       ├── lint.yml
+│       └── release.yml
 ├── .gitignore
 ├── .mise.ci.toml
 ├── .mise.development.toml
@@ -41,84 +41,82 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 ├── .rumdl.toml
 ├── .yamllint.yml
 ├── AGENTS.md
-├── bun.lock
 ├── CLAUDE.md
+├── LICENSE
+├── README.md
+├── bun.lock
 ├── cog.toml
 ├── cspell.json
 ├── eslint.config.js
 ├── lefthook
-│   ├── commit-msg.yml
-│   ├── files.yml
-│   ├── lint.yml
-│   ├── secrets.yml
-│   └── ts.yml
+│   ├── commit-msg.yml
+│   ├── files.yml
+│   ├── lint.yml
+│   ├── secrets.yml
+│   └── ts.yml
 ├── lefthook.yml
-├── LICENSE
 ├── mise-tasks
-│   ├── build
-│   │   └── release
-│   ├── check
-│   │   └── markdown-format
-│   ├── format
-│   │   └── markdown
-│   ├── lint
-│   │   ├── actionlint
-│   │   ├── default
-│   │   ├── format
-│   │   ├── post-install
-│   │   ├── rumdl
-│   │   ├── spell
-│   │   ├── ts
-│   │   ├── typecheck
-│   │   └── yamllint
-│   ├── setup
-│   │   └── default
-│   └── test
-│       └── default
+│   ├── check
+│   │   └── markdown-format
+│   ├── format
+│   │   └── markdown
+│   ├── lint
+│   │   ├── actionlint
+│   │   ├── default
+│   │   ├── format
+│   │   ├── post-install
+│   │   ├── rumdl
+│   │   ├── spell
+│   │   ├── ts
+│   │   ├── typecheck
+│   │   └── yamllint
+│   ├── setup
+│   │   └── default
+│   └── test
+│       └── default
 ├── mise.development.lock
 ├── mise.lock
 ├── package.json
-├── README.md
 ├── scripts
-│   ├── setup-hooks.sh
-│   └── template-init.sh
+│   ├── setup-hooks.sh
+│   └── template-init.sh
 ├── src
-│   ├── cli.ts
-│   ├── commands
-│   │   ├── render.ts
-│   │   ├── session-start.ts
-│   │   ├── stop.ts
-│   │   └── version.ts
-│   ├── compiler.test.ts
-│   ├── config.ts
-│   ├── errors
-│   │   ├── errors.test.ts
-│   │   └── index.ts
-│   ├── hook
-│   │   ├── session-start.ts
-│   │   ├── stop.test.ts
-│   │   └── stop.ts
-│   ├── logger
-│   │   └── index.ts
-│   ├── markdown
-│   │   ├── fences.test.ts
-│   │   └── fences.ts
-│   ├── policy
-│   │   ├── budget.test.ts
-│   │   └── budget.ts
-│   ├── render
-│   │   ├── notice.ts
-│   │   ├── renderer.test.ts
-│   │   └── renderer.ts
-│   ├── tooling.test.ts
-│   └── version.ts
+│   ├── cli.ts
+│   ├── commands
+│   │   ├── render.ts
+│   │   ├── session-start.ts
+│   │   ├── stop.ts
+│   │   └── version.ts
+│   ├── compiler.test.ts
+│   ├── config.ts
+│   ├── errors
+│   │   ├── errors.test.ts
+│   │   └── index.ts
+│   ├── hook
+│   │   ├── session-start.ts
+│   │   ├── stop.test.ts
+│   │   └── stop.ts
+│   ├── logger
+│   │   └── index.ts
+│   ├── markdown
+│   │   ├── fences.test.ts
+│   │   └── fences.ts
+│   ├── policy
+│   │   ├── budget.test.ts
+│   │   └── budget.ts
+│   ├── render
+│   │   ├── notice.ts
+│   │   ├── renderer.test.ts
+│   │   └── renderer.ts
+│   ├── tooling.test.ts
+│   └── version.ts
 ├── test
-│   ├── cli.test.ts
-│   ├── golden
-│   │   ├── sequence.mmd
-│   │   └── sequence.txt
-│   └── helpers
-│       └── columns.ts
+│   ├── cli.test.ts
+│   ├── golden
+│   │   ├── sequence.mmd
+│   │   └── sequence.txt
+│   └── helpers
+│       └── columns.ts
 └── tsconfig.json
 ```
 
