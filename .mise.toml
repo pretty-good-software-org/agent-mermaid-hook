@@ -1,18 +1,26 @@
+# Base tool versions — shared across all environments
+# Domain-specific tools should be added by derived templates.
 [settings]
 experimental = true
 
+# Lock entries resolve python-build-standalone artifacts, so every platform
+# must select that backend instead of falling back to an unlocked source build.
 [settings.python]
 compile = false
 
-# Base tool versions — shared across all environments
 [tools]
-python = "3.10.18"
-uv = "0.11.26"
 cocogitto = "6.5.0"
 actionlint = "1.7.11"
 yamllint = "1.38.0"
 rumdl = "0.2.38"
+"pipx:pre-commit-hooks" = "6.0.0"
+python = "3.10.18"
+uv = "0.11.26"
+
+# TypeScript CLI additions
 bun = "1.4.2"
 "github:miniscruff/changie" = "1.25.0"
 
 [env]
+# uv must use the exact Python runtime selected and locked by Mise.
+UV_NO_MANAGED_PYTHON = "1"
