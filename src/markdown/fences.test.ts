@@ -66,4 +66,12 @@ describe("extractMermaidFences", () => {
       "graph LR\n  A --> B",
     ]);
   });
+
+  test("rejects a backtick fence whose info string contains a backtick", () => {
+    expect(sources("```mermaid `x\ngraph LR\n  A --> B\n```")).toEqual([]);
+  });
+
+  test("accepts a tilde fence whose info string contains a backtick", () => {
+    expect(sources("~~~mermaid `x\ngraph LR\n  A --> B\n~~~")).toEqual(["graph LR\n  A --> B"]);
+  });
 });

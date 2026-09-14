@@ -1,6 +1,7 @@
 // CommonMark rules that matter: a fence is 3+ backticks or tildes, may be indented
 // up to 3 spaces, closes on a fence of the same character at least as long, and
-// runs to end of input if never closed. A fence inside another fence is content.
+// runs to end of input if never closed. A backtick fence's info string may not
+// contain a backtick. A fence inside another fence is content.
 
 export interface MermaidFence {
   source: string;
@@ -12,13 +13,16 @@ interface OpenFence {
   info: string;
 }
 
-const OPEN_FENCE = /^( {0,3})(`{3,}|~{3,})[ \t]*([^`\s]*)/;
+const OPEN_FENCE = /^( {0,3})(`{3,}|~{3,})/;
 const CLOSE_FENCE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
 
 function parseOpenFence(line: string): OpenFence | undefined {
   const match = OPEN_FENCE.exec(line);
   if (match === null) return undefined;
-  const [, indent = "", marker = "", info = ""] = match;
+  const [, indent = "", marker = ""] = match;
+  const infoString = line.slice(indent.length + marker.length).trim();
+  if (marker.startsWith("`") && infoString.includes("`")) return undefined;
+  const [info = ""] = infoString.split(/[ \t]/, 1);
   return { indent: indent.length, marker, info: info.toLowerCase() };
 }
 

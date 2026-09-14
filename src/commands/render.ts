@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 
-import { limitsFromEnv, MIN_MAX_WIDTH, parseMaxWidth } from "../config.ts";
+import { limitsFromEnv, MAX_MAX_WIDTH, MIN_MAX_WIDTH, parseMaxWidth } from "../config.ts";
 import { CliError, ErrorCode } from "../errors/index.ts";
 import { extractMermaidFences } from "../markdown/fences.ts";
 import { composePayload } from "../policy/budget.ts";
@@ -36,7 +36,7 @@ function withWidth(raw: string) {
   if (maxWidth === undefined) {
     throw new CliError(
       ErrorCode.InvalidInput,
-      `Invalid --width: "${raw}". Expected an integer of at least ${String(MIN_MAX_WIDTH)}.`,
+      `Invalid --width: "${raw}". Expected an integer from ${String(MIN_MAX_WIDTH)} to ${String(MAX_MAX_WIDTH)}.`,
       { exitCode: 2 },
     );
   }

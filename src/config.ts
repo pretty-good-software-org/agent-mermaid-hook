@@ -16,7 +16,9 @@ export const SUPPORTED_KINDS = ["flowchart", "sequence", "state", "class", "er"]
 
 export const MIN_MAX_WIDTH = 20;
 
-const maxWidthSchema = z.coerce.number().int().min(MIN_MAX_WIDTH).max(1000);
+export const MAX_MAX_WIDTH = 1000;
+
+const maxWidthSchema = z.coerce.number().int().min(MIN_MAX_WIDTH).max(MAX_MAX_WIDTH);
 
 export interface Limits {
   readonly maxWidth: number;

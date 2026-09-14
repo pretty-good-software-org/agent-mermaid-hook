@@ -52,6 +52,9 @@ const main = defineCommand({
 const rawArgs = process.argv.slice(2);
 const helpFlags = new Set(["--help", "-h"]);
 const options = { rawArgs };
+// The Stop hook must exit 0 whatever goes wrong, even before its command runs:
+// a non-zero Stop hook keeps Claude from ending its turn.
+const isStopHook = rawArgs.includes("stop");
 
 try {
   // runMain owns help rendering but converts all failures to exit 1.
@@ -59,9 +62,9 @@ try {
   const runner = rawArgs.some((arg) => helpFlags.has(arg)) ? runMain : runCommand;
   await runner(main, options);
 } catch (error) {
-  if (error instanceof CliError) {
-    process.stderr.write(`error: ${error.message}\n`);
-    process.exit(error.exitCode);
-  }
-  throw error;
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(`error: ${message}\n`);
+  if (isStopHook) process.exit(0);
+  if (error instanceof CliError) process.exit(error.exitCode);
+  process.exit(1);
 }

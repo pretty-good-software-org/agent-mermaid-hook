@@ -62,4 +62,17 @@ describe("composePayload", () => {
         "\n\ncould not render diagram 2/2 (er): syntax error",
     );
   });
+
+  test("counts notices against the budget and drops what does not fit, silently", () => {
+    const unsupported = Array.from({ length: 50 }, () => "gantt\n  title x");
+    const budget = 250;
+    const payload = composePayload(unsupported, { ...limits, budget }) ?? "";
+    expect(payload.length).toBeLessThanOrEqual(budget);
+    expect(payload).toContain("could not render diagram 1/50 (unknown type)");
+    expect(payload).not.toContain("diagram 50/50");
+  });
+
+  test("returns null when not even a notice fits", () => {
+    expect(composePayload(["gantt\n  title x"], { ...limits, budget: 10 })).toBeNull();
+  });
 });

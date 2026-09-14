@@ -97,6 +97,19 @@ describe("cli", () => {
       expect(result).toEqual({ stdout: "", stderr: "", exitCode: 0 });
     });
 
+    test("stop exits 0 even when a global flag is invalid", async () => {
+      const input = JSON.stringify({ last_assistant_message: reply });
+      const result = await runCli(["--log-format", "bogus", "stop"], input);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("Invalid --log-format");
+    });
+
+    test("render still fails loudly on an invalid global flag", async () => {
+      const result = await runCli(["--log-format", "bogus", "render"], reply);
+      expect(result.exitCode).toBe(2);
+    });
+
     test("stop honours the width limit from the environment", async () => {
       const result = await runCli(["stop"], JSON.stringify({ last_assistant_message: reply }), {
         CLAUDE_MERMAID_MAX_WIDTH: "20",
@@ -133,7 +146,7 @@ describe("cli", () => {
       const result = await runCli(["render", "--width", "abc"], reply);
       expect(result).toEqual({
         stdout: "",
-        stderr: 'error: Invalid --width: "abc". Expected an integer of at least 20.\n',
+        stderr: 'error: Invalid --width: "abc". Expected an integer from 20 to 1000.\n',
         exitCode: 2,
       });
     });
