@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -7,12 +7,26 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import pkg from "../package.json" with { type: "json" };
 
 const CLI = new URL("../src/cli.ts", import.meta.url).pathname;
+const GOLDEN_SOURCE = new URL("golden/sequence.mmd", import.meta.url).pathname;
+const GOLDEN_OUTPUT = new URL("golden/sequence.txt", import.meta.url).pathname;
+
+interface ProcessResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
 
 async function runProcess(
   command: string[],
-): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-  const options = { stdout: "pipe", stderr: "pipe" } as const;
-  const proc = Bun.spawn(command, options);
+  stdin?: string,
+  env?: Record<string, string>,
+): Promise<ProcessResult> {
+  const proc = Bun.spawn(command, {
+    stdin: stdin === undefined ? "ignore" : new TextEncoder().encode(stdin),
+    stdout: "pipe",
+    stderr: "pipe",
+    env: { ...process.env, ...env },
+  });
   const [stdout, stderr, exitCode] = await Promise.all([
     new Response(proc.stdout).text(),
     new Response(proc.stderr).text(),
@@ -21,15 +35,24 @@ async function runProcess(
   return { stdout, stderr, exitCode };
 }
 
+const reply =
+  "Flow:\n\n```mermaid\nflowchart LR\n  A[first long label] --> B[second long label]\n```\n";
+
 describe("cli", () => {
   let binaryDirectory: string;
   let binaryPath: string;
 
   beforeAll(async () => {
-    binaryDirectory = await mkdtemp(path.join(tmpdir(), "ts-cli-test-"));
-    binaryPath = path.join(binaryDirectory, "hello-cli");
-    const command = [process.execPath, "build", CLI, "--compile", "--outfile", binaryPath];
-    const result = await runProcess(command);
+    binaryDirectory = await mkdtemp(path.join(tmpdir(), "claude-mermaid-hook-test-"));
+    binaryPath = path.join(binaryDirectory, "claude-mermaid-hook");
+    const result = await runProcess([
+      process.execPath,
+      "build",
+      CLI,
+      "--compile",
+      "--outfile",
+      binaryPath,
+    ]);
     expect(result.exitCode, `compile CLI: ${result.stderr}`).toBe(0);
   });
 
@@ -40,110 +63,84 @@ describe("cli", () => {
   });
 
   describe.each(["source", "binary"])("%s", (target) => {
-    const runCli = (args: string[]) => {
+    const runCli = (args: string[], stdin?: string, env?: Record<string, string>) => {
       const entry = target === "source" ? [process.execPath, "run", CLI] : [binaryPath];
-      const command = [...entry, ...args];
-      return runProcess(command);
+      return runProcess([...entry, ...args], stdin, env);
     };
 
-    test.each(["--help", "-h"])("%s prints root usage", async (flag) => {
-      const result = await runCli([flag]);
+    test("--help lists the hook commands", async () => {
+      const result = await runCli(["--help"]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain("stop");
+      expect(result.stdout).toContain("session-start");
+      expect(result.stdout).toContain("render");
+    });
+
+    test("stop prints a systemMessage JSON line for a reply with a diagram", async () => {
+      const result = await runCli(["stop"], JSON.stringify({ last_assistant_message: reply }));
       expect(result.exitCode).toBe(0);
       expect(result.stderr).toBe("");
-      expect(result.stdout).toContain("USAGE");
-      expect(result.stdout).toContain("greet");
-      expect(result.stdout).toContain("version");
+      const output = JSON.parse(result.stdout) as { systemMessage: string };
+      expect(output.systemMessage).toContain("┌");
     });
 
-    test("greet --help prints command usage without requiring a name", async () => {
-      const result = await runCli(["greet", "--help"]);
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr).toBe("");
-      expect(result.stdout).toContain("--name");
-      expect(result.stdout).toContain("--json");
+    test("stop prints nothing and exits 0 for a reply without diagrams", async () => {
+      const result = await runCli(
+        ["stop"],
+        JSON.stringify({ last_assistant_message: "no diagrams here" }),
+      );
+      expect(result).toEqual({ stdout: "", stderr: "", exitCode: 0 });
     });
 
-    test.each(["pretty", "json"])("%s diagnostics stay on stderr", async (format) => {
-      const result = await runCli([
-        "--debug",
-        "--log-format",
-        format,
-        "greet",
-        "--name",
-        "Alice",
-        "--json",
-      ]);
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBe('{"message":"Hello, Alice!"}\n');
-      if (format === "json") {
-        expect(JSON.parse(result.stderr)).toMatchObject({ level: 20, msg: "CLI started" });
-      } else {
-        expect(result.stderr).toContain("DEBUG");
-        expect(result.stderr).toContain("CLI started");
-      }
-    });
-    test("greet prints the named greeting", async () => {
-      const result = await runCli(["greet", "--name", "Alice"]);
-      expect(result).toEqual({ stdout: "Hello, Alice!\n", stderr: "", exitCode: 0 });
+    test("stop prints nothing and exits 0 on malformed stdin", async () => {
+      const result = await runCli(["stop"], "{broken");
+      expect(result).toEqual({ stdout: "", stderr: "", exitCode: 0 });
     });
 
-    test("greet --json emits only the message field", async () => {
-      const result = await runCli(["greet", "--name", "Alice", "--json"]);
-      expect(result).toEqual({
-        stdout: '{"message":"Hello, Alice!"}\n',
-        stderr: "",
-        exitCode: 0,
+    test("stop honours the width limit from the environment", async () => {
+      const result = await runCli(["stop"], JSON.stringify({ last_assistant_message: reply }), {
+        CLAUDE_MERMAID_MAX_WIDTH: "20",
       });
+      const output = JSON.parse(result.stdout) as { systemMessage: string };
+      expect(output.systemMessage).toMatch(/limit is 20$/);
     });
 
-    test("greet preserves an explicitly empty name", async () => {
-      const result = await runCli(["greet", "--name", ""]);
-      expect(result).toEqual({ stdout: "Hello, !\n", stderr: "", exitCode: 0 });
-    });
-
-    test("greet --json escapes user input", async () => {
-      const result = await runCli(["greet", "--name", 'Alice\n"Bob"', "--json"]);
+    test("session-start prints one context line that names the width and the supported kinds", async () => {
+      const result = await runCli(["session-start"], undefined, { CLAUDE_MERMAID_MAX_WIDTH: "96" });
       expect(result.exitCode).toBe(0);
       expect(result.stderr).toBe("");
-      expect(JSON.parse(result.stdout)).toEqual({ message: 'Hello, Alice\n"Bob"!' });
+      expect(result.stdout.trim().split("\n")).toHaveLength(1);
+      expect(result.stdout).toContain("under 96 columns");
+      expect(result.stdout).toContain("flowchart, sequence, state, class, er");
     });
 
-    test("greet requires a name", async () => {
-      const result = await runCli(["greet"]);
-      expect(result.exitCode).toBe(1);
-      expect(result.stdout).toBe("");
-      expect(result.stderr).toContain("Missing required argument: --name");
+    test("render draws a bare diagram file exactly as the golden file", async () => {
+      const result = await runCli(["render", "--file", GOLDEN_SOURCE]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      expect(result.stdout).toBe(await readFile(GOLDEN_OUTPUT, "utf8"));
     });
 
-    test("removed hello command fails", async () => {
-      const result = await runCli(["hello"]);
-      expect(result.exitCode).not.toBe(0);
-      expect(result.stdout).toBe("");
+    test("render reads Markdown from stdin and applies --width", async () => {
+      const result = await runCli(["render", "--width", "20"], reply);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toMatch(
+        /^could not render diagram 1\/1 \(flowchart\): \d+ columns wide, limit is 20\n$/,
+      );
     });
 
-    test("invalid --log-format preserves its error and exit status", async () => {
-      const result = await runCli(["greet", "--name", "Alice", "--log-format", "bogus"]);
+    test("render rejects an unusable --width", async () => {
+      const result = await runCli(["render", "--width", "abc"], reply);
       expect(result).toEqual({
         stdout: "",
-        stderr: 'error: Invalid --log-format: "bogus". Supported: pretty, json.\n',
+        stderr: 'error: Invalid --width: "abc". Expected an integer of at least 20.\n',
         exitCode: 2,
       });
     });
 
     test("version prints package identity", async () => {
       const result = await runCli(["version"]);
-      expect(result).toEqual({
-        stdout: `${pkg.name} ${pkg.version}\n`,
-        stderr: "",
-        exitCode: 0,
-      });
-    });
-
-    test("version --json emits package identity", async () => {
-      const result = await runCli(["version", "--json"]);
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr).toBe("");
-      expect(JSON.parse(result.stdout)).toEqual({ name: pkg.name, version: pkg.version });
+      expect(result).toEqual({ stdout: `${pkg.name} ${pkg.version}\n`, stderr: "", exitCode: 0 });
     });
   });
 });

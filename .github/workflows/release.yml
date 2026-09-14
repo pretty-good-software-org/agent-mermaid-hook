@@ -1,0 +1,57 @@
+name: Release
+
+env:
+  MISE_ENV: ci
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+
+# Serialize runs per ref: a release must never be cancelled mid-publish,
+# and two releases must not interleave either.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - uses: pretty-good-software-org/ci-shared/actions/setup/mise@d849c5eec90735f14291eb9a0e61733ed38cfb38 # v1
+        with:
+          mise-env: ci
+      - env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun install --frozen-lockfile
+      - name: Extract release notes
+        run: |
+          NOTES_SOURCE=".changes/${GITHUB_REF_NAME}.md"
+          if [ ! -f "${NOTES_SOURCE}" ]; then
+            echo "::error::Release notes not found: ${NOTES_SOURCE}"
+            echo "Run 'changie batch ${GITHUB_REF_NAME}' before tagging"
+            exit 1
+          fi
+          NOTES_FILE="${{ runner.temp }}/release-notes.md"
+          cp "${NOTES_SOURCE}" "${NOTES_FILE}"
+          echo "RELEASE_NOTES_FILE=${NOTES_FILE}" >> "${GITHUB_ENV}"
+      - name: Build standalone binaries
+        run: mise run build:release
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file "${RELEASE_NOTES_FILE}" \
+            dist/release/*
+      - name: Attest release archives
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: dist/release/*.tar.gz
