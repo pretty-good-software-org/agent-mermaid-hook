@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 import { defineCommand, runCommand, runMain } from "citty";
 
+import { displayCommand } from "./commands/display.ts";
 import { renderCommand } from "./commands/render.ts";
 import { sessionStartCommand } from "./commands/session-start.ts";
-import { stopCommand } from "./commands/stop.ts";
 import { versionCommand } from "./commands/version.ts";
 import { CliError, ErrorCode } from "./errors/index.ts";
 import { createLogger, logFormatSchema, type LogLevel } from "./logger/index.ts";
@@ -14,7 +14,7 @@ const main = defineCommand({
     name: NAME,
     version: VERSION,
     description:
-      "Claude Code hooks that draw fenced Mermaid blocks as Unicode box art in the terminal",
+      "Claude Code hooks that show fenced Mermaid blocks as Unicode box art in the terminal",
   },
   args: {
     debug: {
@@ -42,7 +42,7 @@ const main = defineCommand({
     logger.debug({ args }, "CLI started");
   },
   subCommands: {
-    stop: stopCommand,
+    display: displayCommand,
     "session-start": sessionStartCommand,
     render: renderCommand,
     version: versionCommand,
@@ -52,9 +52,10 @@ const main = defineCommand({
 const rawArgs = process.argv.slice(2);
 const helpFlags = new Set(["--help", "-h"]);
 const options = { rawArgs };
-// The Stop hook must exit 0 whatever goes wrong, even before its command runs:
-// a non-zero Stop hook keeps Claude from ending its turn. The command is the
-// first positional argument; root flags that take a value are skipped with it.
+// Hook commands must exit 0 whatever goes wrong, even before the command runs:
+// a failing hook process must never disturb the stream it decorates. The command
+// is the first positional argument; root flags that take a value are skipped with it.
+const hookCommands = new Set(["display", "session-start"]);
 const valueFlags = new Set(["--log-format"]);
 function invokedCommand(args: readonly string[]): string | undefined {
   let shouldSkipValue = false;
@@ -69,7 +70,7 @@ function invokedCommand(args: readonly string[]): string | undefined {
   }
   return undefined;
 }
-const isStopHook = invokedCommand(rawArgs) === "stop";
+const isHook = hookCommands.has(invokedCommand(rawArgs) ?? "");
 
 try {
   // runMain owns help rendering but converts all failures to exit 1.
@@ -79,7 +80,7 @@ try {
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   process.stderr.write(`error: ${message}\n`);
-  if (isStopHook) process.exit(0);
+  if (isHook) process.exit(0);
   if (error instanceof CliError) process.exit(error.exitCode);
   process.exit(1);
 }
