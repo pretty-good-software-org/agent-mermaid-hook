@@ -88,4 +88,26 @@ describe("displayChunk", () => {
       /^could not render diagram 1\/1 \(flowchart\): \d+ columns wide, limit is 20\n$/,
     );
   });
+
+  test("does not re-emit an open non-mermaid fence when the message ends", () => {
+    const carried = { open: { indent: 0, marker: "```", info: "ts" }, body: [] };
+    const { display, carried: next } = displayChunk(
+      { delta: "const x = 1\n", final: true },
+      carried,
+      limits,
+    );
+    expect(next).toBeUndefined();
+    expect(display).toBe("const x = 1\n");
+  });
+
+  test("shares one budget across prose and every diagram in the chunk", () => {
+    const prose = `${"p".repeat(150)}\n`;
+    const delta = `${prose}${fence}${fence}`;
+    // Room for the prose and one drawing; the second drawing and even its notice do not fit.
+    const budget = 220;
+    const { display } = displayChunk({ delta, final: false }, undefined, { ...limits, budget });
+    expect(display?.length).toBeLessThanOrEqual(budget);
+    expect(display?.startsWith(prose)).toBe(true);
+    expect(display?.split("┌───┐    ┌───┐")).toHaveLength(2);
+  });
 });
