@@ -1,27 +1,28 @@
 # claude-mermaid-hook
 
-Claude Code prints fenced Mermaid blocks as raw text. This tool is a pair of Claude Code hooks that draw them as
-Unicode box art under each reply, in the terminal, with no browser and nothing to install at runtime beyond one
-binary.
+Claude Code prints fenced Mermaid blocks as raw text. This tool is a pair of Claude Code hooks that show them as
+Unicode box art in place of the source, in the terminal, while the reply streams, with no browser and nothing to
+install at runtime beyond one binary. Requires Claude Code 2.1.152 or newer.
 
 ```text
-┌─────────────┐                    ┌───────────┐       ┌──────────┐
-│ Claude Code │                    │ Stop hook │       │ renderer │
-└──────┬──────┘                    └─────┬─────┘       └─────┬────┘
-       │JSON with last_assistant_message │                   │
-       ├────────────────────────────────▶│each mermaid block │
-       │                                 ├──────────────────▶│
-       │                                 │   Unicode boxes   │
-       │  {"systemMessage": "<boxes>"}   │◄╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-       │◄╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤                   │
+┌─────────────┐                     ┌──────────────┐       ┌──────────┐
+│ Claude Code │                     │ display hook │       │ renderer │
+└──────┬──────┘                     └──────┬───────┘       └─────┬────┘
+       │ chunk of completed lines          │                     │
+       ├──────────────────────────────────▶│ each closed fence   │
+       │                                   ├────────────────────▶│
+       │                                   │   Unicode boxes     │
+       │ displayContent replaces the chunk │◄╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+       │◄╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤                     │
 ```
 
 ## How it works
 
-- `claude-mermaid-hook stop` runs as a `Stop` hook. It reads the hook JSON on stdin, extracts every ` ```mermaid `
-  fence from `last_assistant_message`, renders each with [grok-mermaid](https://github.com/xl0/grok-mermaid), and
-  prints one JSON object whose `systemMessage` Claude Code shows under the reply. A reply without diagrams produces no
-  output at all.
+- `claude-mermaid-hook display` runs as a `MessageDisplay` hook. Claude Code calls it with each chunk of completed
+  lines as the reply streams. Prose passes through untouched. A closed ` ```mermaid ` fence is replaced by its drawing
+  from [grok-mermaid](https://github.com/xl0/grok-mermaid). A fence that is still open at the end of a chunk is held,
+  shown as nothing, and drawn when its closing line arrives; the open fence survives between chunks as a small file in
+  the session scratch directory. If a message ends inside a fence, the held source is shown as it was written.
 - `claude-mermaid-hook session-start` runs as a `SessionStart` hook. It prints one line of context that tells the
   model diagrams are drawn in the terminal, which kinds are supported, and how wide they may be.
 - `claude-mermaid-hook render` runs the same pipeline by hand on a file or stdin, for trying a diagram before
@@ -30,8 +31,9 @@ binary.
 Supported diagram kinds: flowchart, sequence, state, class, and ER. Anything else, a diagram with a syntax error, or
 one wider than the limit is replaced by a one-line notice naming the diagram and the reason. Nothing is ever truncated.
 
-The `Stop` hook always exits 0. A `Stop` hook that exits 2 keeps Claude from ending its turn, and a drawing helper
-must never do that.
+The transcript and the model's context keep the original fence, so the same reply still renders natively in pi and in
+Claude Desktop, and `--resume` replays the source. Hook commands always exit 0; a failing hook must never disturb the
+stream it decorates.
 
 ## Installation
 
@@ -57,8 +59,8 @@ Register the hooks in `~/.claude/settings.json`:
         ]
       }
     ],
-    "Stop": [
-      { "hooks": [{ "type": "command", "command": "claude-mermaid-hook stop", "timeout": 15 }] }
+    "MessageDisplay": [
+      { "hooks": [{ "type": "command", "command": "claude-mermaid-hook display", "timeout": 5 }] }
     ]
   }
 }
@@ -72,13 +74,13 @@ claude-mermaid-hook render --file diagram.mmd --width 100
 
 ## Limits
 
-| Limit          | Default | Why                                                                                                  |
-| -------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| Width          | 120     | A hook cannot see the terminal width. Override with `CLAUDE_MERMAID_MAX_WIDTH=<columns>`.            |
-| Output per run | 9,800   | Claude Code caps a hook's `systemMessage` near 10,000 characters and spills longer output to a file. |
+| Limit          | Default | Why                                                                                       |
+| -------------- | ------- | ----------------------------------------------------------------------------------------- |
+| Width          | 120     | A hook cannot see the terminal width. Override with `CLAUDE_MERMAID_MAX_WIDTH=<columns>`. |
+| Output per run | 9,800   | The same cap applies to every hook output; a chunk with several diagrams shares it.       |
 
-Every diagram in a reply is tried in order against what is left of the budget, so a small diagram after a skipped
-large one still draws.
+Every diagram in a chunk is tried in order against what is left of the budget, so a small diagram after a skipped large
+one still draws.
 
 ## Development
 

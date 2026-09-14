@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { extractMermaidFences } from "./fences.ts";
+import { extractMermaidFences, heldLines, scanFenceChunk } from "./fences.ts";
 
 function sources(markdown: string): string[] {
   return extractMermaidFences(markdown).map((fence) => fence.source);
@@ -73,5 +73,57 @@ describe("extractMermaidFences", () => {
 
   test("accepts a tilde fence whose info string contains a backtick", () => {
     expect(sources("~~~mermaid `x\ngraph LR\n  A --> B\n~~~")).toEqual(["graph LR\n  A --> B"]);
+  });
+});
+
+describe("scanFenceChunk", () => {
+  const open = { indent: 0, marker: "```", info: "mermaid" };
+
+  test("reports whether the chunk ended with a newline", () => {
+    expect(scanFenceChunk("a\n").endsWithNewline).toBe(true);
+    expect(scanFenceChunk("a").endsWithNewline).toBe(false);
+  });
+
+  test("splits prose, a closed mermaid fence and trailing prose into segments", () => {
+    const { segments, carried } = scanFenceChunk("x\n```mermaid\ngraph LR\n  A --> B\n```\ny\n");
+    expect(carried).toBeUndefined();
+    expect(segments).toEqual([
+      { kind: "text", lines: ["x"] },
+      { kind: "mermaid", source: "graph LR\n  A --> B" },
+      { kind: "text", lines: ["y"] },
+    ]);
+  });
+
+  test("carries a mermaid fence that is still open, holding its lines", () => {
+    const { segments, carried } = scanFenceChunk("x\n```mermaid\ngraph LR\n");
+    expect(segments).toEqual([{ kind: "text", lines: ["x"] }]);
+    expect(carried).toEqual({ open, body: ["graph LR"] });
+  });
+
+  test("continues a carried fence and closes it in a later chunk", () => {
+    const middle = scanFenceChunk("  A --> B\n", { open, body: ["graph LR"] });
+    expect(middle.segments).toEqual([]);
+    expect(middle.carried).toEqual({ open, body: ["graph LR", "  A --> B"] });
+    const end = scanFenceChunk("```\nafter\n", middle.carried);
+    expect(end.carried).toBeUndefined();
+    expect(end.segments).toEqual([
+      { kind: "mermaid", source: "graph LR\n  A --> B" },
+      { kind: "text", lines: ["after"] },
+    ]);
+  });
+
+  test("carries a non-mermaid fence without holding its lines, so nested mermaid stays content", () => {
+    const first = scanFenceChunk("````markdown\n```mermaid\n");
+    expect(first.segments).toEqual([{ kind: "text", lines: ["````markdown", "```mermaid"] }]);
+    expect(first.carried?.open.info).toBe("markdown");
+    const second = scanFenceChunk("graph LR\n```\n````\n", first.carried);
+    expect(second.carried).toBeUndefined();
+    expect(second.segments).toEqual([{ kind: "text", lines: ["graph LR", "```", "````"] }]);
+  });
+
+  test("heldLines reconstructs the opening fence and body with the original indentation", () => {
+    expect(
+      heldLines({ open: { indent: 2, marker: "~~~", info: "mermaid" }, body: ["a", "b"] }),
+    ).toEqual(["  ~~~mermaid", "a", "b"]);
   });
 });

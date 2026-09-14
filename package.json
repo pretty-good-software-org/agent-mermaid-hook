@@ -1,6 +1,6 @@
 {
   "name": "@pretty-good-software-org/claude-mermaid-hook",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Claude Code hooks that draw fenced Mermaid blocks as Unicode box art under each reply",
   "license": "MIT",
   "type": "module",

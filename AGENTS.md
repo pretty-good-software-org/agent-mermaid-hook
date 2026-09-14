@@ -1,5 +1,5 @@
 ---
-last_validated: 2026-09-14T15:53:03Z
+last_validated: 2026-09-14T22:42:58Z
 project_type: typescript-cli
 ---
 
@@ -7,9 +7,10 @@ project_type: typescript-cli
 
 ## Repository Overview
 
-Claude Code hooks that draw fenced Mermaid blocks as Unicode box art under each reply. A Bun and citty CLI with
-three commands: `stop` (the Stop hook), `session-start` (the SessionStart hook) and `render` (the same pipeline
-by hand). Rendering is grok-mermaid; the width limit and output budget live in `src/config.ts`.
+Claude Code hooks that show fenced Mermaid blocks as Unicode box art in place of the source while a reply streams
+(Claude Code 2.1.152 or newer). A Bun and citty CLI with three commands: `display` (the MessageDisplay hook),
+`session-start` (the SessionStart hook) and `render` (the same pipeline by hand). Rendering is grok-mermaid; the width
+limit and output budget live in `src/config.ts`.
 
 ## Repository Structure
 
@@ -19,9 +20,15 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 ├── .changes
 │   ├── header.tpl.md
 │   ├── unreleased
-│   │   └── .gitkeep
+│   │   ├── .gitkeep
+│   │   ├── Added-20260915-004120.yaml
+│   │   ├── Changed-20260915-004120.yaml
+│   │   └── Removed-20260915-004120.yaml
 │   └── v0.1.0.md
 ├── .changie.yaml
+├── .claude
+│   └── logs
+│       └── sessions.json
 ├── .coderabbit.yaml
 ├── .editorconfig
 ├── .github
@@ -81,9 +88,9 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 ├── src
 │   ├── cli.ts
 │   ├── commands
+│   │   ├── display.ts
 │   │   ├── render.ts
 │   │   ├── session-start.ts
-│   │   ├── stop.ts
 │   │   └── version.ts
 │   ├── compiler.test.ts
 │   ├── config.ts
@@ -91,9 +98,11 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 │   │   ├── errors.test.ts
 │   │   └── index.ts
 │   ├── hook
-│   │   ├── session-start.ts
-│   │   ├── stop.test.ts
-│   │   └── stop.ts
+│   │   ├── display-state.ts
+│   │   ├── display.test.ts
+│   │   ├── display.ts
+│   │   └── session-start.ts
+│   ├── lockfile.test.ts
 │   ├── logger
 │   │   └── index.ts
 │   ├── markdown
@@ -120,12 +129,11 @@ by hand). Rendering is grok-mermaid; the width limit and output budget live in `
 
 ## Development Guidelines
 
-- The `stop` command must always exit 0 and print either nothing or one JSON object with only `systemMessage`.
-  A Stop hook that exits 2 keeps Claude from ending its turn; never add a `decision` field.
+- Hook commands (`display`, `session-start`) always exit 0. `display` prints nothing, which leaves the chunk as
+  Claude Code streamed it, or one JSON object whose `hookSpecificOutput.displayContent` replaces the chunk; the
+  field must sit under `hookSpecificOutput`, a top-level `displayContent` is ignored.
 - Keep the fence extraction, rendering and budget policy as pure functions in `src/markdown`, `src/render` and
   `src/policy`; only `src/commands` touches stdin, stdout and the environment.
-- The `stop` command must always exit 0 and print either nothing or one JSON object with only `systemMessage`.
-  A Stop hook that exits 2 keeps Claude from ending its turn; never add a `decision` field.
 - Keep the fence extraction, rendering and budget policy as pure functions in `src/markdown`, `src/render` and
   `src/policy`; only `src/commands` touches stdin, stdout and the environment.
 - Keep TypeScript strict and ESM-based. Use citty for commands and zod to validate external input.
