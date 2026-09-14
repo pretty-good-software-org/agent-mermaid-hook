@@ -21,16 +21,14 @@ describe("composePayload", () => {
     expect(composePayload([], limits)).toBeNull();
   });
 
-  test("opens with a newline so the first row does not continue the Stop says prefix", () => {
-    const payload = composePayload([small], limits);
-    expect(payload?.startsWith("\n")).toBe(true);
-    expect(payload).toContain("┌");
+  test("starts with the first diagram's top border", () => {
+    expect(composePayload([small], limits)?.startsWith("┌")).toBe(true);
   });
 
   test("replaces a diagram wider than the limit with a notice naming both widths", () => {
     const payload = composePayload([wide], { ...limits, maxWidth: 40 });
     expect(payload).toMatch(
-      /^\ncould not render diagram 1\/1 \(flowchart\): \d+ columns wide, limit is 40$/,
+      /^could not render diagram 1\/1 \(flowchart\): \d+ columns wide, limit is 40$/,
     );
   });
 
@@ -44,7 +42,7 @@ describe("composePayload", () => {
 
   test("skips a diagram the budget cannot hold and still draws the smaller one after it", () => {
     const payload = composePayload([small, tall, small], { ...limits, budget: 400 }) ?? "";
-    const blocks = payload.slice(1).split("\n\n");
+    const blocks = payload.split("\n\n");
     expect(blocks).toHaveLength(3);
     expect(blocks[0]).toContain("┌");
     expect(blocks[1]).toBe(
@@ -60,7 +58,7 @@ describe("composePayload", () => {
       limits,
     );
     expect(payload).toBe(
-      "\ncould not render diagram 1/2 (unknown type): supported types are flowchart, sequence, state, class, er" +
+      "could not render diagram 1/2 (unknown type): supported types are flowchart, sequence, state, class, er" +
         "\n\ncould not render diagram 2/2 (er): syntax error",
     );
   });

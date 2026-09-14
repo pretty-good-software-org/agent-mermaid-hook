@@ -9,15 +9,11 @@ export type Rendered =
   | { status: "invalid"; kind: string };
 
 export function renderDiagram(source: string): Rendered {
-  const art = render(source);
-  if (art !== null) {
-    return {
-      status: "art",
-      kind: diagramKind(source) ?? "diagram",
-      lines: art.plain,
-      width: art.width,
-    };
-  }
+  // grok-mermaid only draws the kinds it can name, so an unnamed header is
+  // unsupported before any drawing is attempted.
   const kind = diagramKind(source);
-  return kind === null ? { status: "unsupported", kind: null } : { status: "invalid", kind };
+  if (kind === null) return { status: "unsupported", kind: null };
+  const art = render(source);
+  if (art === null) return { status: "invalid", kind };
+  return { status: "art", kind, lines: art.plain, width: art.width };
 }

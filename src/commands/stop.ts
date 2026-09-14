@@ -14,8 +14,7 @@ export const stopCommand = defineCommand({
     // from ending its turn. The reason goes to stderr for the debug log.
     try {
       const stdin = await Bun.stdin.text();
-      const result = runStopHook(stdin, limitsFromEnv());
-      process.stdout.write(result.stdout);
+      process.stdout.write(runStopHook(stdin, limitsFromEnv()));
     } catch (error) {
       process.stderr.write(
         `claude-mermaid-hook: ${error instanceof Error ? error.message : String(error)}\n`,

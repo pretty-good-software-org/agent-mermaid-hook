@@ -9,10 +9,6 @@ export interface MermaidFence {
   Diagram source with the fence's own indentation removed from every line.
   */
   source: string;
-  /**
-  1-based line of the opening fence, for messages.
-  */
-  line: number;
 }
 
 interface OpenFence {
@@ -66,7 +62,7 @@ export function extractMermaidFences(markdown: string): MermaidFence[] {
       cursor += 1;
     }
     if (open.info === "mermaid") {
-      fences.push({ source: stripIndent(body, open.indent), line: index + 1 });
+      fences.push({ source: stripIndent(body, open.indent) });
     }
     // Skip past the closing fence, or to the end when the fence never closes.
     index = cursor + 1;

@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 
-import { limitsFromEnv } from "../config.ts";
+import { limitsFromEnv, MIN_MAX_WIDTH, parseMaxWidth } from "../config.ts";
 import { CliError, ErrorCode } from "../errors/index.ts";
 import { extractMermaidFences } from "../markdown/fences.ts";
 import { composePayload } from "../policy/budget.ts";
@@ -24,26 +24,24 @@ export const renderCommand = defineCommand({
     },
   },
   async run({ args }) {
-    const limits = limitsFromEnv();
-    if (args.width !== undefined) {
-      const width = Number(args.width);
-      if (!Number.isSafeInteger(width) || width < 20) {
-        throw new CliError(
-          ErrorCode.InvalidInput,
-          `Invalid --width: "${args.width}". Expected an integer of at least 20.`,
-          {
-            exitCode: 2,
-          },
-        );
-      }
-      limits.maxWidth = width;
-    }
+    const limits = args.width === undefined ? limitsFromEnv() : withWidth(args.width);
     const input =
       args.file === undefined ? await Bun.stdin.text() : await Bun.file(args.file).text();
     const fences = extractMermaidFences(input);
     // A bare diagram file has no fence; treat the whole input as one diagram.
     const sources = fences.length > 0 ? fences.map((fence) => fence.source) : [input];
-    const payload = composePayload(sources, limits);
-    process.stdout.write(`${(payload ?? "").replace(/^\n/, "")}\n`);
+    process.stdout.write(`${composePayload(sources, limits) ?? ""}\n`);
   },
 });
+
+function withWidth(raw: string) {
+  const maxWidth = parseMaxWidth(raw);
+  if (maxWidth === undefined) {
+    throw new CliError(
+      ErrorCode.InvalidInput,
+      `Invalid --width: "${raw}". Expected an integer of at least ${String(MIN_MAX_WIDTH)}.`,
+      { exitCode: 2 },
+    );
+  }
+  return { ...limitsFromEnv(), maxWidth };
+}

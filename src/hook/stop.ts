@@ -14,22 +14,22 @@ const stopInputSchema = z.object({
   last_assistant_message: z.string().optional(),
 });
 
-export interface StopResult {
-  stdout: string;
-  diagrams: number;
-}
+// Claude Code prints the message after a "Stop says:" prefix on the same line,
+// so the message opens with a newline to keep the first diagram row aligned.
+const PREFIX_BREAK = "\n";
 
-export function runStopHook(stdin: string, limits: Limits): StopResult {
+/**
+Returns the exact stdout for one Stop hook run: empty, or one JSON line.
+*/
+export function runStopHook(stdin: string, limits: Limits): string {
   const parsed = stopInputSchema.safeParse(tryJson(stdin));
-  if (!parsed.success || parsed.data.last_assistant_message === undefined) {
-    return { stdout: "", diagrams: 0 };
-  }
+  if (!parsed.success || parsed.data.last_assistant_message === undefined) return "";
   const sources = extractMermaidFences(parsed.data.last_assistant_message).map(
     (fence) => fence.source,
   );
-  const payload = composePayload(sources, limits);
-  if (payload === null) return { stdout: "", diagrams: 0 };
-  return { stdout: `${JSON.stringify({ systemMessage: payload })}\n`, diagrams: sources.length };
+  const payload = composePayload(sources, limits, PREFIX_BREAK.length);
+  if (payload === null) return "";
+  return `${JSON.stringify({ systemMessage: PREFIX_BREAK + payload })}\n`;
 }
 
 function tryJson(text: string): unknown {

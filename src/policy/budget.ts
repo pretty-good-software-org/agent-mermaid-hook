@@ -1,8 +1,14 @@
 import { type Limits, SUPPORTED_KINDS } from "../config.ts";
-import { budgetNotice, invalidNotice, tooWideNotice, unsupportedNotice } from "../render/notice.ts";
+import {
+  budgetNotice,
+  type DiagramPosition,
+  invalidNotice,
+  tooWideNotice,
+  unsupportedNotice,
+} from "../render/notice.ts";
 import { renderDiagram, type Rendered } from "../render/renderer.ts";
 
-// Turns the diagrams of one reply into the single string the hook may print.
+// Turns the diagrams of one reply into the single text the hook may show.
 // Every diagram is tried in order against what is left of the budget, so a small
 // diagram after a skipped huge one still draws. Nothing is ever truncated: a
 // partial drawing misleads, a notice does not.
@@ -10,7 +16,7 @@ import { renderDiagram, type Rendered } from "../render/renderer.ts";
 const SEPARATOR = "\n\n";
 
 function block(
-  position: { index: number; total: number },
+  position: DiagramPosition,
   rendered: Rendered,
   limits: Limits,
   remaining: number,
@@ -26,14 +32,18 @@ function block(
 }
 
 /**
-Renders every diagram source into one payload, or null when there is nothing to show.
+Renders every diagram source into one text, blocks separated by a blank line,
+or null when there is nothing to show. The text plus `reserved` characters the
+caller wraps around it fit limits.budget.
 */
-export function composePayload(sources: readonly string[], limits: Limits): string | null {
+export function composePayload(
+  sources: readonly string[],
+  limits: Limits,
+  reserved = 0,
+): string | null {
   if (sources.length === 0) return null;
   const blocks: string[] = [];
-  // The first payload line continues Claude Code's "Stop says:" prefix, so the
-  // payload opens with a newline to keep the first diagram row aligned.
-  let used = 1;
+  let used = reserved;
   for (const [offset, source] of sources.entries()) {
     const position = { index: offset + 1, total: sources.length };
     const separator = blocks.length === 0 ? 0 : SEPARATOR.length;
@@ -42,5 +52,5 @@ export function composePayload(sources: readonly string[], limits: Limits): stri
     blocks.push(text);
     used += separator + text.length;
   }
-  return `\n${blocks.join(SEPARATOR)}`;
+  return blocks.join(SEPARATOR);
 }
