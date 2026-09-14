@@ -1,7 +1,6 @@
 import { ADVISED_MAX_ROWS, type Limits, SUPPORTED_KINDS } from "../config.ts";
 
-// SessionStart stdout becomes context the model reads. One sentence is enough
-// to steer it toward diagrams the Stop hook can actually draw.
+// SessionStart stdout becomes context the model reads.
 
 export function sessionStartContext(limits: Limits): string {
   const kinds = SUPPORTED_KINDS.join(", ");

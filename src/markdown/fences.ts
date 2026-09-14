@@ -1,13 +1,8 @@
-// Finds ```mermaid fences in a Markdown reply. CommonMark rules that matter here:
-// a fence is 3+ backticks or tildes, may be indented up to 3 spaces, closes on a
-// fence of the same character at least as long, and runs to end of input if never
-// closed. A mermaid fence inside another fence (a ````markdown sample) is content,
-// not a diagram.
+// CommonMark rules that matter: a fence is 3+ backticks or tildes, may be indented
+// up to 3 spaces, closes on a fence of the same character at least as long, and
+// runs to end of input if never closed. A fence inside another fence is content.
 
 export interface MermaidFence {
-  /**
-  Diagram source with the fence's own indentation removed from every line.
-  */
   source: string;
 }
 
@@ -45,11 +40,6 @@ function stripIndent(lines: string[], indent: number): string {
   return lines.map((line) => line.slice(Math.min(indent, leadingSpaces(line)))).join("\n");
 }
 
-/**
-Scans line by line with two states: outside any fence, or inside the fence
-`open` collecting `body`. Only a mermaid fence yields a result; every other
-fence is consumed so that anything nested in it stays content.
-*/
 export function extractMermaidFences(markdown: string): MermaidFence[] {
   const fences: MermaidFence[] = [];
   let open: OpenFence | undefined;

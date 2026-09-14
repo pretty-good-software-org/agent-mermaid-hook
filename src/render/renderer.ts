@@ -1,7 +1,6 @@
 import { diagramKind, render } from "grok-mermaid";
 
-// Wraps grok-mermaid so the rest of the hook never sees a null: every outcome
-// is named, and the reason a diagram did not draw survives to the notice.
+// Every outcome is named so the reason a diagram did not draw reaches the notice.
 
 export type Rendered =
   | { status: "art"; kind: string; lines: string[]; width: number }
@@ -9,8 +8,7 @@ export type Rendered =
   | { status: "invalid"; kind: string };
 
 export function renderDiagram(source: string): Rendered {
-  // grok-mermaid only draws the kinds it can name, so an unnamed header is
-  // unsupported before any drawing is attempted.
+  // grok-mermaid only draws kinds it can name.
   const kind = diagramKind(source);
   if (kind === null) return { status: "unsupported", kind: null };
   const art = render(source);

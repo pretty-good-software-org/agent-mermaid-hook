@@ -8,10 +8,9 @@ import {
 } from "../render/notice.ts";
 import { renderDiagram, type Rendered } from "../render/renderer.ts";
 
-// Turns the diagrams of one reply into the single text the hook may show.
-// Every diagram is tried in order against what is left of the budget, so a small
-// diagram after a skipped huge one still draws. Nothing is ever truncated: a
-// partial drawing misleads, a notice does not.
+// Every diagram is tried against what is left of the budget, so a small diagram
+// after a skipped huge one still draws. Nothing is truncated: a partial drawing
+// misleads, a notice does not.
 
 const SEPARATOR = "\n\n";
 
@@ -31,11 +30,7 @@ function block(
   return art;
 }
 
-/**
-Renders every diagram source into one text, blocks separated by a blank line,
-or null when there is nothing to show. The text plus `reserved` characters the
-caller wraps around it fit limits.budget.
-*/
+// `reserved` is what the caller wraps around the text; both fit limits.budget.
 export function composePayload(
   sources: readonly string[],
   limits: Limits,

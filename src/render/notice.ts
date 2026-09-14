@@ -1,5 +1,4 @@
-// One-line explanations that replace a diagram the hook could not show. The
-// reader sees these; the model never does, so they name the fix for a human.
+// The reader sees these, the model never does, so they name the fix for a human.
 
 export interface DiagramPosition {
   index: number;

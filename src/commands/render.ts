@@ -5,9 +5,6 @@ import { CliError, ErrorCode } from "../errors/index.ts";
 import { extractMermaidFences } from "../markdown/fences.ts";
 import { composePayload } from "../policy/budget.ts";
 
-// Manual entry point for trying the same pipeline the hook runs: feed Markdown
-// or a bare diagram and see exactly what the Stop hook would print.
-
 export const renderCommand = defineCommand({
   meta: {
     name: "render",
