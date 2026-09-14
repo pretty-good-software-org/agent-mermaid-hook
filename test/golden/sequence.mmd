@@ -1,0 +1,8 @@
+sequenceDiagram
+    participant Claude Code
+    participant Stop hook
+    participant renderer
+    Claude Code->>Stop hook: JSON with last_assistant_message
+    Stop hook->>renderer: each mermaid block
+    renderer-->>Stop hook: Unicode boxes
+    Stop hook-->>Claude Code: {"systemMessage": "<boxes>"}

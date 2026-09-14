@@ -1,14 +1,15 @@
 ---
-last_validated: 2026-09-08T19:26:33Z
+last_validated: 2026-09-14T13:55:07Z
 project_type: typescript-cli
 ---
 
-# Agent Instructions: template-ts-cli
+# Agent Instructions: claude-mermaid-hook
 
 ## Repository Overview
 
-Canonical private TypeScript CLI template for Pretty Good Software. It combines Bun, citty, zod, pino, strict
-TypeScript and shared organization configs.
+Claude Code hooks that draw fenced Mermaid blocks as Unicode box art under each reply. A Bun and citty CLI with
+three commands: `stop` (the Stop hook), `session-start` (the SessionStart hook) and `render` (the same pipeline
+by hand). Rendering is grok-mermaid; the width limit and output budget live in `src/config.ts`.
 
 ## Repository Structure
 
@@ -19,14 +20,7 @@ TypeScript and shared organization configs.
 │   ├── header.tpl.md
 │   └── unreleased
 │       ├── .gitkeep
-│       ├── Changed-20260722-142100.yaml
-│       ├── Changed-20260906-010544.yaml
-│       ├── Changed-20260908-173809.yaml
-│       ├── Changed-20260908-175948.yaml
-│       ├── Changed-20260908-184028.yaml
-│       ├── Changed-20260908-194317.yaml
-│       ├── Changed-20260908-200848.yaml
-│       └── Changed-20260908-212633.yaml
+│       └── Added-20260914-141816.yaml
 ├── .changie.yaml
 ├── .coderabbit.yaml
 ├── .editorconfig
@@ -35,7 +29,8 @@ TypeScript and shared organization configs.
 │   ├── dependabot.yml
 │   └── workflows
 │       ├── ci.yml
-│       └── lint.yml
+│       ├── lint.yml
+│       └── release.yml
 ├── .gitignore
 ├── .mise.ci.toml
 ├── .mise.development.toml
@@ -88,25 +83,53 @@ TypeScript and shared organization configs.
 ├── src
 │   ├── cli.ts
 │   ├── commands
-│   │   ├── greet.ts
+│   │   ├── render.ts
+│   │   ├── session-start.ts
+│   │   ├── stop.ts
 │   │   └── version.ts
 │   ├── compiler.test.ts
+│   ├── config.ts
 │   ├── errors
 │   │   ├── errors.test.ts
 │   │   └── index.ts
-│   ├── greeting.test.ts
-│   ├── greeting.ts
+│   ├── hook
+│   │   ├── session-start.ts
+│   │   ├── stop.test.ts
+│   │   └── stop.ts
 │   ├── logger
 │   │   └── index.ts
+│   ├── markdown
+│   │   ├── fences.test.ts
+│   │   └── fences.ts
+│   ├── policy
+│   │   ├── budget.test.ts
+│   │   └── budget.ts
+│   ├── render
+│   │   ├── notice.ts
+│   │   ├── renderer.test.ts
+│   │   └── renderer.ts
 │   ├── tooling.test.ts
 │   └── version.ts
 ├── test
-│   └── cli.test.ts
+│   ├── cli.test.ts
+│   ├── golden
+│   │   ├── sequence.mmd
+│   │   └── sequence.txt
+│   └── helpers
+│       └── columns.ts
 └── tsconfig.json
 ```
 
 ## Development Guidelines
 
+- The `stop` command must always exit 0 and print either nothing or one JSON object with only `systemMessage`.
+  A Stop hook that exits 2 keeps Claude from ending its turn; never add a `decision` field.
+- Keep the fence extraction, rendering and budget policy as pure functions in `src/markdown`, `src/render` and
+  `src/policy`; only `src/commands` touches stdin, stdout and the environment.
+- The `stop` command must always exit 0 and print either nothing or one JSON object with only `systemMessage`.
+  A Stop hook that exits 2 keeps Claude from ending its turn; never add a `decision` field.
+- Keep the fence extraction, rendering and budget policy as pure functions in `src/markdown`, `src/render` and
+  `src/policy`; only `src/commands` touches stdin, stdout and the environment.
 - Keep TypeScript strict and ESM-based. Use citty for commands and zod to validate external input.
 - Put command registration in `src/commands`, business logic in domain modules, and exit handling only in `src/cli.ts`.
 - Throw `CliError` for expected CLI failures. Send user output to stdout and diagnostics through pino.
@@ -122,7 +145,8 @@ TypeScript and shared organization configs.
 
 ## Testing
 
-Keep domain unit tests next to source and CLI process tests in `test/cli.test.ts`. Run the same process contracts
+Keep domain unit tests next to source and CLI process tests in `test/cli.test.ts`; `test/golden/sequence.txt`
+is the full-output snapshot of one rendered sequence diagram. Run the same process contracts
 against source and a temporary compiled binary. Test help, typed errors, output, stderr, and exit status.
 Keep logging in-process and diagnostics on stderr so standalone binaries need no external worker modules.
 

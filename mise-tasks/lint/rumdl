@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-#MISE description="Lint Markdown files"
+#MISE description="Lint tracked Markdown files with rumdl"
 set -euo pipefail
 
+readonly project_root="${MISE_PROJECT_ROOT:?MISE_PROJECT_ROOT must be set by mise}"
+
+cd "$project_root"
 git ls-files -z -- '*.md' | xargs -0 rumdl check --deny-config-warnings --

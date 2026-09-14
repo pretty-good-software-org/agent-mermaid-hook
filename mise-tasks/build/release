@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#MISE description="Build standalone binaries for every supported platform into dist/release"
+set -euo pipefail
+
+# One archive per platform, named the way mise and nix expect
+# (<name>-<os>-<arch>.tar.gz), plus a checksum file over all of them.
+
+name="claude-mermaid-hook"
+out="dist/release"
+rm -rf "$out"
+mkdir -p "$out"
+
+targets=(
+  "bun-darwin-arm64:darwin-arm64"
+  "bun-linux-arm64:linux-arm64"
+  "bun-linux-x64:linux-x64"
+)
+
+for entry in "${targets[@]}"; do
+  target="${entry%%:*}"
+  suffix="${entry##*:}"
+  stage="$(mktemp -d)"
+  bun build ./src/cli.ts --compile --target="$target" --outfile "$stage/$name"
+  tar -C "$stage" -czf "$out/$name-$suffix.tar.gz" "$name"
+  rm -rf "$stage"
+done
+
+(cd "$out" && shasum -a 256 ./*.tar.gz > SHA256SUMS)
+ls -l "$out"

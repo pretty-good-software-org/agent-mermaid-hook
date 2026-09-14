@@ -18,7 +18,7 @@ pre-commit:
         --check --deny-config-warnings -- {staged_files}
       fail_text: "rumdl found formatting issues"
 
-    rumdl-lint:
+    rumdl:
       glob: "**/*.md"
       run: rumdl check --deny-config-warnings -- {staged_files}
       fail_text: "rumdl found lint issues"
