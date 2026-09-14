@@ -41,6 +41,7 @@ export function parseMaxWidth(raw: unknown): number | undefined {
 Reads the width limit from the environment; anything unusable falls back to the default.
 */
 export function limitsFromEnv(env: NodeJS.ProcessEnv = process.env): Limits {
+  // eslint-disable-next-line security/detect-object-injection -- the key is a compile-time constant, not input
   const maxWidth = parseMaxWidth(env[MAX_WIDTH_ENV]) ?? DEFAULT_MAX_WIDTH;
   return { maxWidth, budget: OUTPUT_BUDGET };
 }

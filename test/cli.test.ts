@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -118,7 +118,7 @@ describe("cli", () => {
       const result = await runCli(["render", "--file", GOLDEN_SOURCE]);
       expect(result.exitCode).toBe(0);
       expect(result.stderr).toBe("");
-      expect(result.stdout).toBe(await readFile(GOLDEN_OUTPUT, "utf8"));
+      expect(result.stdout).toBe(await Bun.file(GOLDEN_OUTPUT).text());
     });
 
     test("render reads Markdown from stdin and applies --width", async () => {

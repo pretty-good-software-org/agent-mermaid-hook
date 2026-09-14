@@ -45,27 +45,32 @@ function stripIndent(lines: string[], indent: number): string {
   return lines.map((line) => line.slice(Math.min(indent, leadingSpaces(line)))).join("\n");
 }
 
+/**
+Scans line by line with two states: outside any fence, or inside the fence
+`open` collecting `body`. Only a mermaid fence yields a result; every other
+fence is consumed so that anything nested in it stays content.
+*/
 export function extractMermaidFences(markdown: string): MermaidFence[] {
-  const lines = markdown.split(/\r?\n/);
   const fences: MermaidFence[] = [];
-  let index = 0;
-  while (index < lines.length) {
-    const open = parseOpenFence(lines.at(index) ?? "");
+  let open: OpenFence | undefined;
+  let body: string[] = [];
+
+  const close = (): void => {
+    if (open?.info === "mermaid") fences.push({ source: stripIndent(body, open.indent) });
+    open = undefined;
+    body = [];
+  };
+
+  for (const line of markdown.split(/\r?\n/)) {
     if (open === undefined) {
-      index += 1;
-      continue;
+      open = parseOpenFence(line);
+    } else if (isClosingFence(line, open)) {
+      close();
+    } else {
+      body.push(line);
     }
-    const body: string[] = [];
-    let cursor = index + 1;
-    while (cursor < lines.length && !isClosingFence(lines.at(cursor) ?? "", open)) {
-      body.push(lines.at(cursor) ?? "");
-      cursor += 1;
-    }
-    if (open.info === "mermaid") {
-      fences.push({ source: stripIndent(body, open.indent) });
-    }
-    // Skip past the closing fence, or to the end when the fence never closes.
-    index = cursor + 1;
   }
+  // An unclosed fence runs to the end of the reply.
+  close();
   return fences;
 }
