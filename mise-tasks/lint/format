@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Check formatting with Prettier"
+set -euo pipefail
+
+bun run format:check

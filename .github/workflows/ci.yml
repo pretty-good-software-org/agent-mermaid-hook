@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  MISE_ENV: ci
+
+jobs:
+  Test:
+    name: Test
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - uses: pretty-good-software-org/ci-shared/actions/setup/mise@d849c5eec90735f14291eb9a0e61733ed38cfb38 # v1
+        with:
+          mise-env: ci
+      - env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun install --frozen-lockfile
+      - run: mise run test:default
+
+  Build:
+    name: Build
+    runs-on: [self-hosted, Linux, ARM64]
+    steps:
+      - uses: pretty-good-software-org/ci-shared/actions/setup/mise@d849c5eec90735f14291eb9a0e61733ed38cfb38 # v1
+        with:
+          mise-env: ci
+      - env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun install --frozen-lockfile
+      - run: bun run build
+
+  commit-lint:
+    name: Conventional Commits
+    runs-on: [self-hosted, Linux, ARM64]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: pretty-good-software-org/ci-shared/actions/setup/mise@d849c5eec90735f14291eb9a0e61733ed38cfb38 # v1
+        with:
+          mise-env: ci
+          fetch-depth: "0"
+      - env:
+          FROM: ${{ github.event.pull_request.base.sha }}
+          TO: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          git config user.name >/dev/null 2>&1 || {
+            git config user.name "ci"
+            git config user.email "ci@localhost"
+          }
+          git rev-list --no-merges --reverse "${FROM}..${TO}" | while read -r sha; do
+            cog verify "$(git log -1 --format=%B "$sha")" || exit 1
+          done

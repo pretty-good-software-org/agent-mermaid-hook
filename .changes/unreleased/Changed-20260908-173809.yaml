@@ -1,0 +1,3 @@
+kind: Changed
+body: Simplify the greeting API and commands; fix help and standalone logging with source and binary regression tests.
+time: 2026-09-08T17:38:09.30703+02:00

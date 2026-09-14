@@ -1,0 +1,3 @@
+kind: Changed
+body: Run Bun tests through Mise, remove empty test tasks and redundant CI steps, and align frozen-lockfile checks.
+time: 2026-09-08T17:59:48.622968+02:00

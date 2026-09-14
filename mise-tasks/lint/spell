@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Spell-check sources with cspell"
+set -euo pipefail
+
+bun run spell

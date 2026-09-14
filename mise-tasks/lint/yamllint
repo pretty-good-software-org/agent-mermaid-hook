@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Lint tracked YAML files"
+set -euo pipefail
+
+mapfile -d '' -t files < <(git ls-files -z -- '*.yaml' '*.yml')
+((${#files[@]} > 0)) || exit 0
+yamllint --strict "${files[@]}"

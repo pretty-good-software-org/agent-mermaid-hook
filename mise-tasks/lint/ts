@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Lint TypeScript sources with ESLint"
+set -euo pipefail
+
+bun run lint

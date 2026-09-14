@@ -1,0 +1,18 @@
+[settings]
+experimental = true
+
+[settings.python]
+compile = false
+
+# Base tool versions — shared across all environments
+[tools]
+python = "3.10.18"
+uv = "0.11.26"
+cocogitto = "6.5.0"
+actionlint = "1.7.11"
+yamllint = "1.38.0"
+rumdl = "0.2.38"
+bun = "1.4.2"
+"github:miniscruff/changie" = "1.25.0"
+
+[env]

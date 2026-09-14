@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run Bun tests"
+set -euo pipefail
+
+bun test

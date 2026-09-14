@@ -1,0 +1,12 @@
+dist
+node_modules
+coverage
+bun.lockb
+bun.lock
+*.min.js
+.claude
+
+# base-template lint configs are synced verbatim — exempt from Prettier style
+.actionlint.yml
+.yamllint.yml
+.coderabbit.yaml

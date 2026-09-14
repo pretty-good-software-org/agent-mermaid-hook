@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Type-check TypeScript sources"
+set -euo pipefail
+
+bun run typecheck

@@ -1,0 +1,9 @@
+{
+  "extends": "@pretty-good-software-org/ts-config/tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*", "test/**/*", "*.ts", "*.config.ts", "*.config.js", "eslint.config.js"],
+  "exclude": ["node_modules", "dist"]
+}

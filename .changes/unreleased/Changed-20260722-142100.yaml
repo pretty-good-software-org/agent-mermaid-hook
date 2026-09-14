@@ -1,0 +1,5 @@
+kind: Changed
+body: >-
+  Replace the legacy Markdown linter with the existing Mise-pinned rumdl for Markdown
+  linting while preserving the established formatting rule scope.
+time: 2026-07-22T14:21:00+02:00

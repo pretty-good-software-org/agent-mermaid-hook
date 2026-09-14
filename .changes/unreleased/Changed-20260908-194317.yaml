@@ -1,0 +1,3 @@
+kind: Changed
+body: Adopt ts-config 2.1.0, native TS7 typechecking, the TS6 lint API, and Bun 1.4.2.
+time: 2026-09-08T19:43:17.821319+02:00

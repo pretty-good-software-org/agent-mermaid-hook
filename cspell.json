@@ -1,0 +1,15 @@
+{
+  "version": "0.2",
+  "import": ["@pretty-good-software-org/ts-config/cspell.json"],
+  "ignorePaths": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "bun.lockb",
+    "bun.lock",
+    "*.lock",
+    ".git",
+    ".claude"
+  ],
+  "words": ["citty", "coderabbit", "noemit", "pino", "rumdl"]
+}

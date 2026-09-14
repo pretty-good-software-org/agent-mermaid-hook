@@ -1,0 +1,31 @@
+pre-commit:
+  commands:
+    typecheck:
+      glob: "**/*.{ts,tsx}"
+      run: bun run typecheck
+      fail_text: "tsc found type errors"
+
+    lint:
+      glob: "**/*.{ts,tsx}"
+      run: bun x eslint {staged_files}
+      fail_text: "ESLint found issues"
+
+    format:
+      glob: "**/*.{ts,tsx,js,jsx,json,md,yaml,yml}"
+      run: bun x prettier --check {staged_files}
+      fail_text: "Prettier check failed (run `bun run format`)"
+
+    spell:
+      glob: "**/*.{ts,tsx,md,json}"
+      run: bun x cspell --no-progress --no-must-find-files {staged_files}
+      fail_text: "cspell found unknown words"
+    test:
+      glob: "**/*.{ts,tsx}"
+      run: bun test --bail
+      fail_text: "tests failed"
+
+pre-push:
+  commands:
+    full-check:
+      run: bun run check
+      fail_text: "full check failed"

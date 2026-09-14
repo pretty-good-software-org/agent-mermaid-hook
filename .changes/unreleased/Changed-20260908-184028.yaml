@@ -1,0 +1,3 @@
+kind: Changed
+body: Adopt ts-config 2.0.0 and supported ESLint 10 peers; remove redundant plugin dependencies and overrides.
+time: 2026-09-08T18:40:28.013131+02:00
