@@ -53,8 +53,23 @@ const rawArgs = process.argv.slice(2);
 const helpFlags = new Set(["--help", "-h"]);
 const options = { rawArgs };
 // The Stop hook must exit 0 whatever goes wrong, even before its command runs:
-// a non-zero Stop hook keeps Claude from ending its turn.
-const isStopHook = rawArgs.includes("stop");
+// a non-zero Stop hook keeps Claude from ending its turn. The command is the
+// first positional argument; root flags that take a value are skipped with it.
+const valueFlags = new Set(["--log-format"]);
+function invokedCommand(args: readonly string[]): string | undefined {
+  let shouldSkipValue = false;
+  for (const arg of args) {
+    if (shouldSkipValue) {
+      shouldSkipValue = false;
+    } else if (valueFlags.has(arg)) {
+      shouldSkipValue = true;
+    } else if (!arg.startsWith("-")) {
+      return arg;
+    }
+  }
+  return undefined;
+}
+const isStopHook = invokedCommand(rawArgs) === "stop";
 
 try {
   // runMain owns help rendering but converts all failures to exit 1.

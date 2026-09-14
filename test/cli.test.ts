@@ -110,6 +110,18 @@ describe("cli", () => {
       expect(result.exitCode).toBe(2);
     });
 
+    test("a flag value equal to stop does not make render exit 0", async () => {
+      const result = await runCli(["render", "--log-format", "stop"], reply);
+      expect(result.exitCode).toBe(2);
+      expect(result.stderr).toContain("Invalid --log-format");
+    });
+
+    test("stop after a global flag still exits 0 on error", async () => {
+      const input = JSON.stringify({ last_assistant_message: reply });
+      const result = await runCli(["--debug", "--log-format", "bogus", "stop"], input);
+      expect(result.exitCode).toBe(0);
+    });
+
     test("stop honours the width limit from the environment", async () => {
       const result = await runCli(["stop"], JSON.stringify({ last_assistant_message: reply }), {
         CLAUDE_MERMAID_MAX_WIDTH: "20",
