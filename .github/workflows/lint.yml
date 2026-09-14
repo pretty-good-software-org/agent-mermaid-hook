@@ -24,9 +24,12 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     steps:
-      - uses: pretty-good-software-org/ci-shared/actions/setup/mise@d849c5eec90735f14291eb9a0e61733ed38cfb38 # v1
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
-          mise-env: ci
+          version: 2026.7.7
+          install: true
+          github_token: ${{ github.token }}
       - env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun install --frozen-lockfile
