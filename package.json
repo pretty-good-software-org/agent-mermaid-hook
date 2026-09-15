@@ -1,18 +1,18 @@
 {
-  "name": "@pretty-good-software-org/claude-mermaid-hook",
+  "name": "@pretty-good-software-org/agent-mermaid-hook",
   "version": "0.2.0",
   "description": "Claude Code hooks that draw fenced Mermaid blocks as Unicode box art under each reply",
   "license": "MIT",
   "type": "module",
   "private": true,
   "bin": {
-    "claude-mermaid-hook": "./dist/cli.js"
+    "agent-mermaid-hook": "./dist/cli.js"
   },
   "prettier": "@pretty-good-software-org/ts-config/prettier.json",
   "scripts": {
     "dev": "bun run src/cli.ts",
     "build": "bun build ./src/cli.ts --outdir ./dist --target bun --format esm",
-    "build:binary": "bun build ./src/cli.ts --compile --outfile ./dist/claude-mermaid-hook",
+    "build:binary": "bun build ./src/cli.ts --compile --outfile ./dist/agent-mermaid-hook",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "lint": "eslint .",

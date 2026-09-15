@@ -42,7 +42,7 @@ export const displayCommand = defineCommand({
       process.stdout.write(`${JSON.stringify(output)}\n`);
     } catch (error) {
       process.stderr.write(
-        `claude-mermaid-hook: ${error instanceof Error ? error.message : String(error)}\n`,
+        `agent-mermaid-hook: ${error instanceof Error ? error.message : String(error)}\n`,
       );
     }
   },

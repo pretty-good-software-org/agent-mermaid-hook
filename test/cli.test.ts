@@ -57,8 +57,8 @@ describe("cli", () => {
   let scratch: string;
 
   beforeAll(async () => {
-    binaryDirectory = await mkdtemp(path.join(tmpdir(), "claude-mermaid-hook-test-"));
-    binaryPath = path.join(binaryDirectory, "claude-mermaid-hook");
+    binaryDirectory = await mkdtemp(path.join(tmpdir(), "agent-mermaid-hook-test-"));
+    binaryPath = path.join(binaryDirectory, "agent-mermaid-hook");
     scratch = path.join(binaryDirectory, "scratch");
     const result = await runProcess([
       process.execPath,
@@ -153,13 +153,13 @@ describe("cli", () => {
 
     test("display honours the width limit from the environment", async () => {
       const result = await runCli(["display"], chunk(reply, { scratchpad_dir: scratch }), {
-        CLAUDE_MERMAID_MAX_WIDTH: "20",
+        AGENT_MERMAID_MAX_WIDTH: "20",
       });
       expect(displayed(result.stdout)).toMatch(/limit is 20\n$/);
     });
 
     test("session-start prints one context line that names the width and the supported kinds", async () => {
-      const result = await runCli(["session-start"], undefined, { CLAUDE_MERMAID_MAX_WIDTH: "96" });
+      const result = await runCli(["session-start"], undefined, { AGENT_MERMAID_MAX_WIDTH: "96" });
       expect(result.exitCode).toBe(0);
       expect(result.stderr).toBe("");
       expect(result.stdout.trim().split("\n")).toHaveLength(1);

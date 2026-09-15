@@ -10,7 +10,7 @@ export const DEFAULT_MAX_WIDTH = 120;
 
 export const ADVISED_MAX_ROWS = 60;
 
-export const MAX_WIDTH_ENV = "CLAUDE_MERMAID_MAX_WIDTH";
+export const MAX_WIDTH_ENV = "AGENT_MERMAID_MAX_WIDTH";
 
 export const SUPPORTED_KINDS = ["flowchart", "sequence", "state", "class", "er"] as const;
 

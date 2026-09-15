@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@pretty-good-software-org/claude-mermaid-hook",
+      "name": "@pretty-good-software-org/agent-mermaid-hook",
       "dependencies": {
         "citty": "0.2.2",
         "grok-mermaid": "0.2.3",

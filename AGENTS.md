@@ -3,7 +3,7 @@ last_validated: 2026-09-14T22:42:58Z
 project_type: typescript-cli
 ---
 
-# Agent Instructions: claude-mermaid-hook
+# Agent Instructions: agent-mermaid-hook
 
 ## Repository Overview
 

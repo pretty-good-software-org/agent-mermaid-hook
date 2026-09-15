@@ -5,7 +5,7 @@ set -euo pipefail
 # One archive per platform, named the way mise and nix expect
 # (<name>-<os>-<arch>.tar.gz), plus a checksum file over all of them.
 
-name="claude-mermaid-hook"
+name="agent-mermaid-hook"
 out="dist/release"
 rm -rf "$out"
 mkdir -p "$out"
