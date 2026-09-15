@@ -1,8 +1,8 @@
 # agent-mermaid-hook
 
-Claude Code prints fenced Mermaid blocks as raw text. This tool is a pair of Claude Code hooks that show them as
-Unicode box art in place of the source, in the terminal, while the reply streams, with no browser and nothing to
-install at runtime beyond one binary. Requires Claude Code 2.1.152 or newer.
+Claude Code and Codex print fenced Mermaid blocks as raw text. This tool is a set of hooks that show them as Unicode
+box art in the terminal, with no browser and nothing to install at runtime beyond one binary. In Claude Code 2.1.152 or
+newer the drawing replaces the source while the reply streams; in Codex it follows the reply.
 
 ```text
 ┌─────────────┐                     ┌──────────────┐       ┌──────────┐
@@ -25,6 +25,9 @@ install at runtime beyond one binary. Requires Claude Code 2.1.152 or newer.
   the session scratch directory. If a message ends inside a fence, the held source is shown as it was written.
 - `agent-mermaid-hook session-start` runs as a `SessionStart` hook. It prints one line of context that tells the
   model diagrams are drawn in the terminal, which kinds are supported, and how wide they may be.
+- `agent-mermaid-hook codex-stop` runs as a Codex `Stop` hook. Codex has no hook that rewrites a reply, so when a turn
+  ends it reads the final reply, draws its Mermaid fences, and returns them as the hook message: a title on the first
+  line and the drawings under it, fitted to the four columns Codex indents them by.
 - `agent-mermaid-hook render` runs the same pipeline by hand on a file or stdin, for trying a diagram before
   committing it to a reply.
 
@@ -64,6 +67,18 @@ Register the hooks in `~/.claude/settings.json`:
     ]
   }
 }
+```
+
+For Codex, register the Stop hook in `~/.codex/config.toml` and approve it once in `/hooks`, or install it for every
+user in `/etc/codex/requirements.toml`, where managed hooks need no approval:
+
+```toml
+[[hooks.Stop]]
+
+[[hooks.Stop.hooks]]
+type = "command"
+command = "agent-mermaid-hook codex-stop"
+timeout = 10
 ```
 
 Try a diagram before putting it in a reply:
