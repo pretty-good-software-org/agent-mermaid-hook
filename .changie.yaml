@@ -24,3 +24,9 @@ newlines:
   beforeChangelogVersion: 1
   endOfVersion: 1
 envPrefix: CHANGIE_
+# `changie batch` writes the release version into package.json, which the CLI
+# reports, so a release can never ship with the previous version string.
+replacements:
+  - path: package.json
+    find: '  "version": ".*",'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
