@@ -1,5 +1,0 @@
-kind: Changed
-body: >-
-  Renamed to agent-mermaid-hook: binary, package, release archives, state
-  directory and the width variable AGENT_MERMAID_MAX_WIDTH (was CLAUDE_MERMAID_MAX_WIDTH)
-time: 2026-09-15T19:34:30.551682+02:00
