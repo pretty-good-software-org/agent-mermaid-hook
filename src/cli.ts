@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { defineCommand, runCommand, runMain } from "citty";
 
+import { codexStopCommand } from "./commands/codex-stop.ts";
 import { displayCommand } from "./commands/display.ts";
 import { renderCommand } from "./commands/render.ts";
 import { sessionStartCommand } from "./commands/session-start.ts";
@@ -14,7 +15,7 @@ const main = defineCommand({
     name: NAME,
     version: VERSION,
     description:
-      "Claude Code hooks that show fenced Mermaid blocks as Unicode box art in the terminal",
+      "Claude Code and Codex hooks that show fenced Mermaid blocks as Unicode box art in the terminal",
   },
   args: {
     debug: {
@@ -43,6 +44,7 @@ const main = defineCommand({
   },
   subCommands: {
     display: displayCommand,
+    "codex-stop": codexStopCommand,
     "session-start": sessionStartCommand,
     render: renderCommand,
     version: versionCommand,
@@ -55,7 +57,7 @@ const options = { rawArgs };
 // Hook commands must exit 0 whatever goes wrong, even before the command runs:
 // a failing hook process must never disturb the stream it decorates. The command
 // is the first positional argument; root flags that take a value are skipped with it.
-const hookCommands = new Set(["display", "session-start"]);
+const hookCommands = new Set(["display", "session-start", "codex-stop"]);
 const valueFlags = new Set(["--log-format"]);
 function invokedCommand(args: readonly string[]): string | undefined {
   let shouldSkipValue = false;

@@ -89,7 +89,7 @@ describe("cli", () => {
       expect(result.stdout).toContain("display");
       expect(result.stdout).toContain("session-start");
       expect(result.stdout).toContain("render");
-      expect(result.stdout).not.toContain("stop");
+      expect(result.stdout).toContain("codex-stop");
     });
 
     test("display replaces a fenced diagram inside a chunk with its drawing", async () => {
@@ -156,6 +156,30 @@ describe("cli", () => {
         AGENT_MERMAID_MAX_WIDTH: "20",
       });
       expect(displayed(result.stdout)).toMatch(/limit is 20\n$/);
+    });
+
+    test("codex-stop prints the drawings as the Codex hook message", async () => {
+      const result = await runCli(
+        ["codex-stop"],
+        JSON.stringify({ last_assistant_message: reply }),
+      );
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toBe("");
+      const output = JSON.parse(result.stdout) as { systemMessage: string };
+      expect(output.systemMessage.split("\n", 1)[0]).toBe("Mermaid diagram");
+      expect(output.systemMessage).toContain("┌");
+    });
+
+    test("codex-stop prints nothing and exits 0 on malformed stdin", async () => {
+      const result = await runCli(["codex-stop"], "{broken");
+      expect(result).toEqual({ stdout: "", stderr: "", exitCode: 0 });
+    });
+
+    test("codex-stop exits 0 even when a global flag is invalid", async () => {
+      const result = await runCli(["--log-format", "bogus", "codex-stop"], "{}");
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toContain("Invalid --log-format");
     });
 
     test("session-start prints one context line that names the width and the supported kinds", async () => {
