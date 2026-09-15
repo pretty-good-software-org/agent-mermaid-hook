@@ -8,7 +8,7 @@ import { type CarriedFence } from "../markdown/fences.ts";
 // Each MessageDisplay chunk is a fresh process, so an open fence survives between
 // chunks as a small file keyed by message id, in the session's scratch directory.
 
-const DIRECTORY = "claude-mermaid-hook";
+const DIRECTORY = "agent-mermaid-hook";
 
 export class DisplayState {
   private readonly file: string;
