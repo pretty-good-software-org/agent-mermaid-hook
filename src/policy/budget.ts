@@ -15,7 +15,7 @@ import { renderDiagram, type Rendered } from "../render/renderer.ts";
 
 const SEPARATOR = "\n\n";
 
-function block(position: DiagramPosition, rendered: Rendered, limits: Limits): string {
+function drawingOrNotice(position: DiagramPosition, rendered: Rendered, limits: Limits): string {
   if (rendered.status === "unsupported") return unsupportedNotice(position, SUPPORTED_KINDS);
   if (rendered.status === "invalid") return invalidNotice(position, rendered.kind);
   if (rendered.width > limits.maxWidth) {
@@ -24,8 +24,13 @@ function block(position: DiagramPosition, rendered: Rendered, limits: Limits): s
   return rendered.lines.join("\n");
 }
 
-function fitted(position: DiagramPosition, rendered: Rendered, limits: Limits, remaining: number) {
-  const candidate = block(position, rendered, limits);
+function fitToRemaining(
+  position: DiagramPosition,
+  rendered: Rendered,
+  limits: Limits,
+  remaining: number,
+): string | undefined {
+  const candidate = drawingOrNotice(position, rendered, limits);
   if (candidate.length <= remaining) return candidate;
   const notice = budgetNotice(position, rendered.kind, limits.budget);
   return notice.length <= remaining ? notice : undefined;
@@ -42,7 +47,8 @@ export function composePayload(
   for (const [offset, source] of sources.entries()) {
     const position = { index: offset + 1, total: sources.length };
     const separator = blocks.length === 0 ? 0 : SEPARATOR.length;
-    const text = fitted(position, renderDiagram(source), limits, limits.budget - used - separator);
+    const remaining = limits.budget - used - separator;
+    const text = fitToRemaining(position, renderDiagram(source), limits, remaining);
     if (text === undefined) continue;
     blocks.push(text);
     used += separator + text.length;
