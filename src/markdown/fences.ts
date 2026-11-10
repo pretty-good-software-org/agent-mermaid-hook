@@ -74,16 +74,17 @@ export function isHeld(open: OpenFence): boolean {
 // into a segment, and the fence currently open with its held body.
 class Scan {
   private text: string[] = [];
+  private open: OpenFence | undefined;
+  private body: string[];
   readonly segments: Segment[] = [];
-  open: OpenFence | undefined;
-  body: string[];
 
   constructor(carried: CarriedFence | undefined) {
     this.open = carried?.open;
     this.body = carried?.body ?? [];
   }
 
-  private startFence(line: string): void {
+  // The line may open a fence; if it does not, or the fence is not held, it is text.
+  private takeOutsideFence(line: string): void {
     this.open = parseOpenFence(line);
     if (this.open !== undefined && isHeld(this.open)) {
       this.flushText();
@@ -105,7 +106,7 @@ class Scan {
 
   take(line: string): void {
     if (this.open === undefined) {
-      this.startFence(line);
+      this.takeOutsideFence(line);
     } else if (isClosingFence(line, this.open)) {
       this.closeFence(line, this.open);
     } else if (isHeld(this.open)) {
