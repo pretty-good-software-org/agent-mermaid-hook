@@ -10,6 +10,12 @@ import { CliError, ErrorCode, errorMessage } from "./errors/index.ts";
 import { createLogger, logFormatSchema, type LogLevel } from "./logger/index.ts";
 import { NAME, VERSION } from "./version.ts";
 
+// Hook commands must exit 0 whatever goes wrong, even before the command runs:
+// a failing hook process must never disturb the stream it decorates.
+const HOOK_COMMANDS = new Set(["display", "session-start", "codex-stop"]);
+const VALUE_FLAGS = new Set(["--log-format"]);
+const HELP_FLAGS = new Set(["--help", "-h"]);
+
 const main = defineCommand({
   meta: {
     name: NAME,
@@ -51,20 +57,14 @@ const main = defineCommand({
   },
 });
 
-const rawArgs = process.argv.slice(2);
-const helpFlags = new Set(["--help", "-h"]);
-const options = { rawArgs };
-// Hook commands must exit 0 whatever goes wrong, even before the command runs:
-// a failing hook process must never disturb the stream it decorates. The command
-// is the first positional argument; root flags that take a value are skipped with it.
-const hookCommands = new Set(["display", "session-start", "codex-stop"]);
-const valueFlags = new Set(["--log-format"]);
+// The command is the first positional argument; a root flag that takes a value
+// is skipped together with its value.
 function invokedCommand(args: readonly string[]): string | undefined {
   let shouldSkipValue = false;
   for (const arg of args) {
     if (shouldSkipValue) {
       shouldSkipValue = false;
-    } else if (valueFlags.has(arg)) {
+    } else if (VALUE_FLAGS.has(arg)) {
       shouldSkipValue = true;
     } else if (!arg.startsWith("-")) {
       return arg;
@@ -72,13 +72,20 @@ function invokedCommand(args: readonly string[]): string | undefined {
   }
   return undefined;
 }
-const isHook = hookCommands.has(invokedCommand(rawArgs) ?? "");
+
+const rawArgs = process.argv.slice(2);
+const isHook = HOOK_COMMANDS.has(invokedCommand(rawArgs) ?? "");
+const isHelp = rawArgs.some((arg) => HELP_FLAGS.has(arg));
+const options = { rawArgs };
 
 try {
   // runMain owns help rendering but converts all failures to exit 1.
   // Keep normal execution here so CliError retains its declared exit code.
-  const runner = rawArgs.some((arg) => helpFlags.has(arg)) ? runMain : runCommand;
-  await runner(main, options);
+  if (isHelp) {
+    await runMain(main, options);
+  } else {
+    await runCommand(main, options);
+  }
 } catch (error) {
   process.stderr.write(`error: ${errorMessage(error)}\n`);
   if (isHook) process.exit(0);
