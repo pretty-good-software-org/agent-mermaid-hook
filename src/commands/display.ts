@@ -5,6 +5,7 @@ import { limitsFromEnv } from "../config.ts";
 import { displayChunk } from "../hook/display.ts";
 import { DisplayState } from "../hook/display-state.ts";
 import { parseHookInput } from "../hook/input.ts";
+import { reportHookError } from "./hook-error.ts";
 
 const inputSchema = z.object({
   delta: z.string(),
@@ -34,9 +35,7 @@ export const displayCommand = defineCommand({
       };
       process.stdout.write(`${JSON.stringify(output)}\n`);
     } catch (error) {
-      process.stderr.write(
-        `agent-mermaid-hook: ${error instanceof Error ? error.message : String(error)}\n`,
-      );
+      reportHookError(error);
     }
   },
 });

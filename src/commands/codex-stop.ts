@@ -2,6 +2,7 @@ import { defineCommand } from "citty";
 
 import { limitsFromEnv } from "../config.ts";
 import { codexStopOutput } from "../hook/codex-stop.ts";
+import { reportHookError } from "./hook-error.ts";
 
 export const codexStopCommand = defineCommand({
   meta: {
@@ -13,9 +14,7 @@ export const codexStopCommand = defineCommand({
     try {
       process.stdout.write(codexStopOutput(await Bun.stdin.text(), limitsFromEnv()));
     } catch (error) {
-      process.stderr.write(
-        `agent-mermaid-hook: ${error instanceof Error ? error.message : String(error)}\n`,
-      );
+      reportHookError(error);
     }
   },
 });
