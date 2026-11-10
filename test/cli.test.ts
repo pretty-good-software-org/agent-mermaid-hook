@@ -133,6 +133,15 @@ describe("cli", () => {
       expect(result).toEqual({ stdout: "", stderr: "", exitCode: 0 });
     });
 
+    test("display reports a failure on stderr and exits 0 with nothing on stdout", async () => {
+      // A file where the scratch directory should be makes saving the open fence fail.
+      const fileAsScratch = { scratchpad_dir: binaryPath };
+      const result = await runCli(["display"], chunk("```mermaid\nflowchart LR\n", fileAsScratch));
+      expect(result.stdout).toBe("");
+      expect(result.exitCode).toBe(0);
+      expect(result.stderr).toMatch(/^agent-mermaid-hook: \S.*\n$/);
+    });
+
     test("display exits 0 even when a global flag is invalid", async () => {
       const result = await runCli(["--log-format", "bogus", "display"], chunk(reply));
       expect(result.exitCode).toBe(0);

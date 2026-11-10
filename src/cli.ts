@@ -6,7 +6,7 @@ import { displayCommand } from "./commands/display.ts";
 import { renderCommand } from "./commands/render.ts";
 import { sessionStartCommand } from "./commands/session-start.ts";
 import { versionCommand } from "./commands/version.ts";
-import { CliError, ErrorCode } from "./errors/index.ts";
+import { CliError, ErrorCode, errorMessage } from "./errors/index.ts";
 import { createLogger, logFormatSchema, type LogLevel } from "./logger/index.ts";
 import { NAME, VERSION } from "./version.ts";
 
@@ -80,8 +80,7 @@ try {
   const runner = rawArgs.some((arg) => helpFlags.has(arg)) ? runMain : runCommand;
   await runner(main, options);
 } catch (error) {
-  const message = error instanceof Error ? error.message : String(error);
-  process.stderr.write(`error: ${message}\n`);
+  process.stderr.write(`error: ${errorMessage(error)}\n`);
   if (isHook) process.exit(0);
   if (error instanceof CliError) process.exit(error.exitCode);
   process.exit(1);
