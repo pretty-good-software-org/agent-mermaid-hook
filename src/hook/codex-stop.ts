@@ -3,6 +3,7 @@ import { z } from "zod";
 import { type Limits } from "../config.ts";
 import { extractMermaidFences } from "../markdown/fences.ts";
 import { composePayload } from "../policy/budget.ts";
+import { parseHookInput } from "./input.ts";
 
 // Codex has no hook that rewrites a reply, so the drawings follow it as the Stop
 // hook's systemMessage. Codex prints the first line after "↳ Hook · " and every
@@ -14,14 +15,6 @@ const inputSchema = z.object({
   last_assistant_message: z.string().nullable().optional(),
 });
 
-function tryJson(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return undefined;
-  }
-}
-
 function title(count: number): string {
   return count === 1 ? "Mermaid diagram" : `Mermaid diagrams (${String(count)})`;
 }
@@ -29,8 +22,7 @@ function title(count: number): string {
 // Returns the hook's stdout: one JSON line, or "" when there is nothing to draw.
 // Never emits `decision` or `continue`, so it can never block or stop the turn.
 export function codexStopOutput(stdin: string, limits: Limits): string {
-  const parsed = inputSchema.safeParse(tryJson(stdin));
-  const message = parsed.success ? parsed.data.last_assistant_message : undefined;
+  const message = parseHookInput(inputSchema, stdin)?.last_assistant_message;
   if (message === undefined || message === null) return "";
   const sources = extractMermaidFences(message).map((fence) => fence.source);
   if (sources.length === 0) return "";

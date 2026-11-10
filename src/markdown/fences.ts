@@ -63,7 +63,10 @@ function stripIndent(lines: string[], indent: number): string {
   return lines.map((line) => line.slice(Math.min(indent, leadingSpaces(line)))).join("\n");
 }
 
-function isHeld(open: OpenFence): boolean {
+/**
+Only a mermaid fence is held back until it closes; any other fence streams as text.
+*/
+export function isHeld(open: OpenFence): boolean {
   return open.info === "mermaid";
 }
 
