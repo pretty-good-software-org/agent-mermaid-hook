@@ -1,5 +1,5 @@
 import { type Limits } from "../config.ts";
-import { type CarriedFence, heldLines, scanFenceChunk } from "../markdown/fences.ts";
+import { type CarriedFence, heldLines, isHeld, scanFenceChunk } from "../markdown/fences.ts";
 import { composePayload } from "../policy/budget.ts";
 
 // MessageDisplay shows each chunk of completed lines as it streams. A chunk with
@@ -21,10 +21,6 @@ export interface DisplayResult {
   Open mermaid fence to hand to the next chunk of the same message.
   */
   carried?: CarriedFence | undefined;
-}
-
-function isMermaid(carried: CarriedFence | undefined): carried is CarriedFence {
-  return carried?.open.info === "mermaid";
 }
 
 export function displayChunk(
@@ -53,7 +49,9 @@ export function displayChunk(
   }
   // A message that ends inside a mermaid fence shows the held source rather than
   // losing it; a non-mermaid fence was never held, so there is nothing to flush.
-  if (chunk.final && isMermaid(scanned.carried)) push(heldLines(scanned.carried));
+  if (chunk.final && scanned.carried !== undefined && isHeld(scanned.carried.open)) {
+    push(heldLines(scanned.carried));
+  }
 
   const trailing = scanned.endsWithNewline ? "\n" : "";
   const display = lines.length === 0 ? "" : lines.join("\n") + trailing;

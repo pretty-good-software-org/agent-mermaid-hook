@@ -27,8 +27,7 @@ function block(position: DiagramPosition, rendered: Rendered, limits: Limits): s
 function fitted(position: DiagramPosition, rendered: Rendered, limits: Limits, remaining: number) {
   const candidate = block(position, rendered, limits);
   if (candidate.length <= remaining) return candidate;
-  const kind = rendered.kind ?? "unknown type";
-  const notice = budgetNotice(position, kind, limits.budget);
+  const notice = budgetNotice(position, rendered.kind, limits.budget);
   return notice.length <= remaining ? notice : undefined;
 }
 
