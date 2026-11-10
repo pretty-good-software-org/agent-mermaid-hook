@@ -18,26 +18,24 @@ limit and output budget live in `src/config.ts`.
 .
 ├── .actionlint.yml
 ├── .changes
-│   ├── header.tpl.md
-│   ├── unreleased
-│   │   ├── .gitkeep
-│   │   ├── Added-20260915-004120.yaml
-│   │   ├── Changed-20260915-004120.yaml
-│   │   └── Removed-20260915-004120.yaml
-│   └── v0.1.0.md
+│   ├── header.tpl.md
+│   ├── unreleased
+│   │   └── .gitkeep
+│   ├── v0.1.0.md
+│   ├── v0.2.0.md
+│   ├── v0.3.0.md
+│   ├── v0.3.1.md
+│   └── v0.4.0.md
 ├── .changie.yaml
-├── .claude
-│   └── logs
-│       └── sessions.json
 ├── .coderabbit.yaml
 ├── .editorconfig
 ├── .github
-│   ├── PULL_REQUEST_TEMPLATE.md
-│   ├── dependabot.yml
-│   └── workflows
-│       ├── ci.yml
-│       ├── lint.yml
-│       └── release.yml
+│   ├── dependabot.yml
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── workflows
+│       ├── ci.yml
+│       ├── lint.yml
+│       └── release.yml
 ├── .gitignore
 ├── .mise.ci.toml
 ├── .mise.development.toml
@@ -48,82 +46,90 @@ limit and output budget live in `src/config.ts`.
 ├── .rumdl.toml
 ├── .yamllint.yml
 ├── AGENTS.md
+├── bun.lock
 ├── CHANGELOG.md
 ├── CLAUDE.md
-├── LICENSE
-├── README.md
-├── bun.lock
 ├── cog.toml
 ├── cspell.json
 ├── eslint.config.js
 ├── lefthook
-│   ├── commit-msg.yml
-│   ├── files.yml
-│   ├── lint.yml
-│   ├── secrets.yml
-│   └── ts.yml
+│   ├── commit-msg.yml
+│   ├── files.yml
+│   ├── lint.yml
+│   ├── secrets.yml
+│   └── ts.yml
 ├── lefthook.yml
+├── LICENSE
 ├── mise-tasks
-│   ├── check
-│   │   └── markdown-format
-│   ├── format
-│   │   └── markdown
-│   ├── lint
-│   │   ├── actionlint
-│   │   ├── default
-│   │   ├── format
-│   │   ├── post-install
-│   │   ├── rumdl
-│   │   ├── spell
-│   │   ├── ts
-│   │   ├── typecheck
-│   │   └── yamllint
-│   ├── setup
-│   │   └── default
-│   └── test
-│       └── default
+│   ├── build
+│   │   └── release
+│   ├── check
+│   │   └── markdown-format
+│   ├── format
+│   │   └── markdown
+│   ├── lint
+│   │   ├── actionlint
+│   │   ├── default
+│   │   ├── format
+│   │   ├── post-install
+│   │   ├── rumdl
+│   │   ├── spell
+│   │   ├── ts
+│   │   ├── typecheck
+│   │   └── yamllint
+│   ├── setup
+│   │   └── default
+│   └── test
+│       └── default
 ├── mise.development.lock
 ├── mise.lock
 ├── package.json
+├── README.md
 ├── src
-│   ├── cli.ts
-│   ├── commands
-│   │   ├── display.ts
-│   │   ├── render.ts
-│   │   ├── session-start.ts
-│   │   └── version.ts
-│   ├── compiler.test.ts
-│   ├── config.ts
-│   ├── errors
-│   │   ├── errors.test.ts
-│   │   └── index.ts
-│   ├── hook
-│   │   ├── display-state.ts
-│   │   ├── display.test.ts
-│   │   ├── display.ts
-│   │   └── session-start.ts
-│   ├── lockfile.test.ts
-│   ├── logger
-│   │   └── index.ts
-│   ├── markdown
-│   │   ├── fences.test.ts
-│   │   └── fences.ts
-│   ├── policy
-│   │   ├── budget.test.ts
-│   │   └── budget.ts
-│   ├── render
-│   │   ├── notice.ts
-│   │   ├── renderer.test.ts
-│   │   └── renderer.ts
-│   ├── tooling.test.ts
-│   └── version.ts
+│   ├── cli.ts
+│   ├── commands
+│   │   ├── codex-stop.ts
+│   │   ├── display.ts
+│   │   ├── hook-error.ts
+│   │   ├── render.ts
+│   │   ├── session-start.ts
+│   │   └── version.ts
+│   ├── compiler.test.ts
+│   ├── config.ts
+│   ├── errors
+│   │   ├── errors.test.ts
+│   │   └── index.ts
+│   ├── hook
+│   │   ├── codex-stop.test.ts
+│   │   ├── codex-stop.ts
+│   │   ├── display-state.ts
+│   │   ├── display.test.ts
+│   │   ├── display.ts
+│   │   ├── input.ts
+│   │   └── session-start.ts
+│   ├── lockfile.test.ts
+│   ├── logger
+│   │   └── index.ts
+│   ├── markdown
+│   │   ├── fences.test.ts
+│   │   └── fences.ts
+│   ├── policy
+│   │   ├── budget.test.ts
+│   │   └── budget.ts
+│   ├── release-version.test.ts
+│   ├── render
+│   │   ├── notice.ts
+│   │   ├── renderer.test.ts
+│   │   └── renderer.ts
+│   ├── tooling.test.ts
+│   └── version.ts
 ├── test
-│   ├── cli.test.ts
-│   ├── golden
-│   │   ├── sequence.mmd
-│   │   └── sequence.txt
-│   └── helpers
-│       └── columns.ts
+│   ├── cli.test.ts
+│   ├── golden
+│   │   ├── sequence.mmd
+│   │   └── sequence.txt
+│   └── helpers
+│       └── columns.ts
 └── tsconfig.json
 ```
 
@@ -132,8 +138,6 @@ limit and output budget live in `src/config.ts`.
 - Hook commands (`display`, `session-start`) always exit 0. `display` prints nothing, which leaves the chunk as
   Claude Code streamed it, or one JSON object whose `hookSpecificOutput.displayContent` replaces the chunk; the
   field must sit under `hookSpecificOutput`, a top-level `displayContent` is ignored.
-- Keep the fence extraction, rendering and budget policy as pure functions in `src/markdown`, `src/render` and
-  `src/policy`; only `src/commands` touches stdin, stdout and the environment.
 - Keep the fence extraction, rendering and budget policy as pure functions in `src/markdown`, `src/render` and
   `src/policy`; only `src/commands` touches stdin, stdout and the environment.
 - Keep TypeScript strict and ESM-based. Use citty for commands and zod to validate external input.

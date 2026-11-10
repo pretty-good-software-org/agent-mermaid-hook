@@ -1,0 +1,3 @@
+kind: Security
+body: Update zod to 4.6.6 so oversized hook input cannot exhaust memory during validation (GHSA-mrhx-c7xc-m3w5).
+time: 2026-11-10T03:13:45.000000+01:00
