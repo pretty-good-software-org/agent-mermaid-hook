@@ -26,8 +26,14 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
+      # LW-11 (2026-11-26): no mise cache on self-hosted X64 VMs (restore ~24s vs cold install 9–11s);
+      # save only from the default branch.
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
+          cache: ${{ !(runner.environment == 'self-hosted' && runner.os == 'Linux' && runner.arch == 'X64') }}
+          cache_save: >-
+            ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+                github.event_name != 'pull_request_target' }}
           version: 2026.7.7
           install: true
           github_token: ${{ github.token }}
@@ -43,6 +49,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
+          cache: ${{ !(runner.environment == 'self-hosted' && runner.os == 'Linux' && runner.arch == 'X64') }}
+          cache_save: >-
+            ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+                github.event_name != 'pull_request_target' }}
           version: 2026.7.7
           install: true
           github_token: ${{ github.token }}
@@ -61,6 +71,10 @@ jobs:
           fetch-depth: 0
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
+          cache: ${{ !(runner.environment == 'self-hosted' && runner.os == 'Linux' && runner.arch == 'X64') }}
+          cache_save: >-
+            ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+                github.event_name != 'pull_request_target' }}
           version: 2026.7.7
           install: true
           github_token: ${{ github.token }}
